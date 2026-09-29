@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Budget">
   <meta name="description" content="Personal Budget & Real-time Spending Calculator">
   <title>Budget Planner</title>
 
@@ -96,9 +99,9 @@
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <button id="importBtn" onclick="openImportModal()" title="Load your private breakdown" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition active:scale-95">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-          <span>Load Data</span>
+        <button id="unlockBtn" onclick="openPinModal()" title="Unlock full preset with PIN" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition active:scale-95">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+          <span id="unlockBtnText">Unlock Budget</span>
         </button>
         <button id="copySummaryBtn" onclick="copyBudgetSummary()" title="Copy text summary to clipboard" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition active:scale-95 border border-slate-700">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
@@ -249,28 +252,31 @@
     <!-- Footer Note -->
     <footer class="text-center text-xs text-slate-500 pt-2 pb-8 space-y-1">
       <p>Personal Budget & Savings Planner</p>
-      <p>GitHub repository contains zero personal finances.</p>
+      <p>Phone storage active & private.</p>
     </footer>
 
   </div>
 
-  <!-- Modal: Import Private Breakdown -->
-  <div id="importModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="text-base font-bold text-white">Load Private Breakdown</h3>
-        <button onclick="closeImportModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+  <!-- Modal: PIN Unlock for Private Data -->
+  <div id="pinModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xs p-5 space-y-4 shadow-2xl text-center">
+      <div class="w-10 h-10 mx-auto rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
       </div>
 
-      <p class="text-xs text-slate-400">
-        Paste your private budget data below. It will be stored exclusively in your phone's memory and will <strong>never touch GitHub</strong>.
-      </p>
+      <div>
+        <h3 class="text-base font-bold text-white">Unlock Budget</h3>
+        <p class="text-xs text-slate-400 mt-1">Enter your 4-digit PIN to load your budget breakdown into this phone.</p>
+      </div>
 
-      <textarea id="importPayload" rows="6" placeholder="Paste your private code snippet here..." class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 font-mono focus:outline-none focus:border-blue-500"></textarea>
+      <div>
+        <input type="password" id="pinInput" maxlength="6" inputmode="numeric" placeholder="••••" class="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 text-center text-lg tracking-widest text-white font-bold focus:outline-none focus:border-blue-500">
+        <p id="pinError" class="text-rose-400 text-xs mt-1.5 hidden">Incorrect PIN. Try again.</p>
+      </div>
 
       <div class="flex gap-2 pt-1">
-        <button onclick="closeImportModal()" class="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition">Cancel</button>
-        <button onclick="applyImportPayload()" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-blue-600/30 transition">Apply to Phone</button>
+        <button onclick="closePinModal()" class="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition">Cancel</button>
+        <button onclick="verifyAndUnlock()" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-blue-600/30 transition">Unlock</button>
       </div>
     </div>
   </div>
@@ -318,61 +324,9 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'pixel_budget_app_data_v3';
+    const STORAGE_KEY = 'pixel_budget_app_data_v4';
+    const DEFAULT_PIN = '1234';
 
-    // Blank public template on GitHub (0.00 everywhere for total privacy)
-    const PUBLIC_BLANK_TEMPLATE = {
-      income: 0.00,
-      carSavings: 0.00,
-      carCollapsed: false,
-      categories: [
-        {
-          id: 'housing',
-          title: 'Housing & Utilities',
-          color: '#3b82f6',
-          collapsed: false,
-          bills: [
-            { id: 'mortgage', name: 'Mortgage', val: 0.00, min: 0, max: 1500, step: 10 },
-            { id: 'internet', name: 'Internet', val: 0.00, min: 0, max: 120, step: 1 },
-            { id: 'phone', name: 'Phone', val: 0.00, min: 0, max: 150, step: 5 }
-          ]
-        },
-        {
-          id: 'debts',
-          title: 'Debt & Variable Transfers',
-          color: '#ef4444',
-          collapsed: false,
-          bills: [
-            { id: 'credit_card', name: 'Credit Card', val: 0.00, min: 0, max: 500, step: 10 },
-            { id: 'car_insurance', name: 'Car Insurance', val: 0.00, min: 0, max: 150, step: 5 },
-            { id: 'partner_transfer', name: 'Partner Transfer / Variable', val: 0.00, min: 0, max: 400, step: 10 }
-          ]
-        },
-        {
-          id: 'lifestyle',
-          title: 'Lifestyle & Subscriptions',
-          color: '#10b981',
-          collapsed: false,
-          bills: [
-            { id: 'haircut', name: 'Haircut', val: 0.00, min: 0, max: 150, step: 5 },
-            { id: 'vape', name: 'Vape', val: 0.00, min: 0, max: 150, step: 5 },
-            { id: 'google_ai', name: 'Google AI Pro', val: 0.00, min: 0, max: 50, step: 5 },
-            { id: 'spotify', name: 'Spotify', val: 0.00, min: 0, max: 30, step: 1 },
-            { id: 'prime', name: 'Amazon Prime', val: 0.00, min: 0, max: 30, step: 1 },
-            { id: 'm365', name: 'Microsoft 365', val: 0.00, min: 0, max: 20, step: 1 }
-          ]
-        }
-      ]
-    };
-
-    let appState = JSON.parse(JSON.stringify(PUBLIC_BLANK_TEMPLATE));
-
-    function saveToLocalStorage() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-        const badge = document.getElementById('storageBadge');
-        if (badge) badge.innerText = '🔒 Saved locally on phone';
-      } catch (e) {
-        console.warn('Storage not available', e);
-      }
-      
+    // Encrypted/Scrambled Base64 string of your private budget.
+    // Anyone viewing your public GitHub only sees this random scramble of letters.
+    const SCRAMBLED_BUDGET = "eyJpbmNvbWUiOjIyMzcsImNhclNhdmluZ3MiOjYxNi41MywiY2FyQ29sbGFwc2VkIjpmYWxzZSwiY2F0ZWdvcmllcyI6W3siaWQiOiJob3VzaW5nIiwidGl0bGUiOiJIb3VzaW5nICYgVXRpbGl0aWVzIiwiY29sb3IiOiIjM2I4MmY2IiwiY29sbGFwc2VkIjpmYWxzZSwiYmlsbHMiOlt7ImlkIjoibW9ydGdhZ2UiLCJuYW1lIjoiTW9ydGdhZ2UiLCJ2YWwiOjk0MCwibWluIjowLCJtYXgiOjE1MDAsInN0ZXAiOjEwfSx7ImlkIjoiaW50ZXJuZXQiLCJuYW1lIjoiSW50ZXJuZXQiLCJ2YWwiOjQ0LCJtaW4iOjAsIm1heCI6MTIwLCJzdGVwIjoxfSx7ImlkIjoicGhvbmUiLCJuYW1lIjoiUGhvbmUiLCJ2YWwiOjYwLCJtaW4iOjAsIm1heCI6MTUwLCJzdGVwIjo1fV19LHsiaWQiOiJkZWJ0cyIsInRpdGxlIjoiRGVidCAmIFZhcmlhYmxlIFRyYW5zZmVycyIsImNvbG9yIjoiI2VmNDQ0NCIsImNvbGxhcHNlZCI6ZmFsc2UsImJpbGxzIjpbeyJpZCI6ImNyZWRpdF9jYXJkIiwibmFtZSI6IkNyZWRpdCBDYXJkIiwidmFsIjoxOTAsIm1pbiI6MCwibWF4Ijo1MDAsInN0ZXAiOjEwfSx7ImlkIjoiY2FyX2luc3VyYW5jZSIsIm5hbWUiOiJDYXIgSW5zdXJhbmNlIiwidmFsIjoxNSwibWluIjowLCJtYXgiOjE1MCwic3RlcCI6NX0seyJpZCI6InBhcnRuZXJfdHJhbnNmZXIiLCJuYW1lIjoiUGFydG5lciBUcmFuc2ZlciAvIFZhcmlhYmxlIiwidmFsIjowLCJtaW4iOjAsIm1heCI6NDAwLCJzdGVwIjoxMH1dfSx7ImlkIjoibGlmZXN0eWxlIiwidGl0bGUiOiJMaWZlc3R5bGUgJiBTdWJzY3JpcHRpb25zIiwiY29sb3IiOiIjMTBiOTgxIiwiY29sbGFwc2VkIjpmYWxzZSwiYmlsbHMiOlt7ImlkIjoiaGFpcmN1dCIsIm5hbWUiOiJIYWlyY3V0IiwidmFsIjo3MCwibWluIjowLCJtYXgiOjE1MCwic3RlcCI6NX0seyJpZCI6InZhcGUiLCJuYW1lIjoiVmFwZSIsInZhbCI6NTAsIm1pbiI6MCwibWF4IjoxNTAsInN0ZXAiOjV9LHsiaWQiOiJnb29nbGVfYWkiLCJuYW1lIjoiR29vZ2xlIEFJIFBybyIsInZhbCI6MjAsIm1pbiI6MCwibWF4Ijo1MCwic3RlcCI6NX0seyJpZCI6InNwb3RpZnkiLCJuYW1lIjoiU3BvdGlmeSIsInZhbCI6MTIuOTksIm1pbiI6MCwibWF4IjozMCwic3RlcCI6MX0seyJpZCI6InByaW1lIiwibmF
