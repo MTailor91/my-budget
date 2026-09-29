@@ -1,3 +1,4 @@
+html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0f172a">
   <title>Budget Planner</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json?v=6">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -16,19 +17,22 @@
     input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; border: 2px solid #ffffff; margin-top: -7px; }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen selection:bg-blue-600 selection:text-white p-4 max-w-xl mx-auto space-y-4">
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-xl mx-auto space-y-4">
 
   <!-- Header -->
   <header class="flex items-center justify-between border-b border-slate-800 pb-3">
     <div class="flex items-center gap-2">
       <span class="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow">£</span>
       <div>
-        <h1 class="text-lg font-bold text-white leading-tight">Budget Planner</h1>
-        <p class="text-[10px] text-emerald-400 font-semibold" id="storageStatus">🔒 Local Phone Storage Active</p>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base font-bold text-white leading-tight">Budget Planner</h1>
+          <span class="text-[9px] bg-blue-500/20 text-blue-400 font-bold px-1.5 py-0.5 rounded border border-blue-500/30">v2.5</span>
+        </div>
+        <p class="text-[10px] text-emerald-400 font-medium" id="storageStatus">🔒 Private Phone Storage</p>
       </div>
     </div>
     <div class="flex gap-2">
-      <button onclick="openPinModal()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow transition active:scale-95">
+      <button id="btnUnlock" onclick="handleUnlockClick()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow transition active:scale-95">
         Unlock Budget
       </button>
       <button onclick="copySummary()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition active:scale-95">
@@ -68,7 +72,7 @@
       </div>
       <div class="flex items-center gap-1">
         <span class="text-sm text-slate-400">£</span>
-        <input type="number" id="inputIncome" value="0.00" step="10" min="0" oninput="onDataChanged()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-sm font-bold text-white focus:outline-none focus:border-blue-500 tabular-nums">
+        <input type="number" id="inputIncome" value="0.00" step="10" min="0" oninput="onIncomeChange(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-sm font-bold text-white focus:outline-none focus:border-blue-500 tabular-nums">
       </div>
       <p class="text-[10px] text-slate-400 pt-1">After Car: <strong id="netAfterCar" class="text-slate-200">£0.00</strong></p>
     </div>
@@ -86,29 +90,16 @@
     </div>
   </div>
 
-  <!-- Proportional Bar -->
-  <div class="bg-slate-800/40 border border-slate-800 rounded-xl p-3 space-y-1.5">
-    <div class="flex justify-between text-xs text-slate-300">
-      <span>Distribution</span>
-      <span>Total Bills: <strong id="displayTotalBills" class="text-white">£0.00</strong></span>
-    </div>
-    <div class="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden flex">
-      <div id="barBills" class="bg-blue-500 h-full transition-all" style="width: 0%"></div>
-      <div id="barCar" class="bg-emerald-500 h-full transition-all" style="width: 0%"></div>
-      <div id="barPocket" class="bg-amber-400 h-full transition-all" style="width: 0%"></div>
-    </div>
-  </div>
-
   <!-- Dedicated Car Savings Slider -->
   <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-4 space-y-2">
     <div class="flex justify-between items-center text-xs">
       <span class="font-bold text-emerald-400">Dedicated Car Fund Transfer</span>
       <div class="flex items-center gap-1">
         <span class="text-slate-400">£</span>
-        <input type="number" id="inputCar" value="0.00" step="5" min="0" oninput="syncCarInput(this.value)" class="w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-right font-bold text-emerald-400 text-xs tabular-nums">
+        <input type="number" id="inputCar" value="0.00" step="5" min="0" oninput="onCarChange(this.value)" class="w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-right font-bold text-emerald-400 text-xs tabular-nums">
       </div>
     </div>
-    <input type="range" id="sliderCar" min="0" max="1000" step="5" value="0" oninput="syncCarSlider(this.value)" class="w-full accent-emerald-500">
+    <input type="range" id="sliderCar" min="0" max="1000" step="5" value="0" oninput="onCarChange(this.value)" class="w-full accent-emerald-500">
   </div>
 
   <!-- Bills Section -->
@@ -117,16 +108,19 @@
     <div id="categoriesContainer" class="space-y-3"></div>
   </div>
 
-  <!-- PIN Modal -->
-  <div id="pinModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xs p-5 space-y-4 shadow-2xl text-center">
-      <h3 class="text-base font-bold text-white">Unlock Preset Budget</h3>
-      <p class="text-xs text-slate-400">Enter your 4-digit PIN to load your budget into this device.</p>
-      <input type="password" id="pinCodeInput" maxlength="6" inputmode="numeric" placeholder="••••" class="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 text-center text-lg text-white font-bold tracking-widest focus:outline-none focus:border-blue-500">
-      <p id="pinErrorMsg" class="text-rose-400 text-xs hidden">Incorrect PIN. Try 1234.</p>
-      <div class="flex gap-2">
-        <button onclick="closePinModal()" class="flex-1 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cancel</button>
-        <button onclick="unlockBudgetWithPIN()" class="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold">Unlock</button>
+  <!-- Direct Modal with Inline Styles (Guaranteed to show) -->
+  <div id="pinModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(4px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:#0f172a; border:1px solid #334155; border-radius:18px; width:100%; max-width:320px; padding:20px; text-align:center;">
+      <h3 style="font-size:16px; font-weight:bold; color:#fff; margin-bottom:6px;">Unlock Preset Budget</h3>
+      <p style="font-size:12px; color:#94a3b8; margin-bottom:16px;">Enter your 4-digit PIN to load your budget into this phone.</p>
+      
+      <input type="password" id="pinCodeInput" maxlength="6" inputmode="numeric" placeholder="••••" style="width:100%; background:#1e293b; border:1px solid #475569; border-radius:12px; padding:10px; text-align:center; font-size:20px; color:#fff; font-weight:bold; letter-spacing:4px; margin-bottom:12px; outline:none;">
+      
+      <p id="pinErrorMsg" style="display:none; color:#f43f5e; font-size:12px; margin-bottom:12px;">Incorrect PIN. Try 1234.</p>
+      
+      <div style="display:flex; gap:8px;">
+        <button onclick="closePinModal()" style="flex:1; padding:10px; border-radius:12px; background:#1e293b; color:#cbd5e1; font-size:12px; font-weight:600; border:none; cursor:pointer;">Cancel</button>
+        <button onclick="unlockBudgetWithPIN()" style="flex:1; padding:10px; border-radius:12px; background:#2563eb; color:#fff; font-size:12px; font-weight:600; border:none; cursor:pointer;">Unlock</button>
       </div>
     </div>
   </div>
@@ -137,13 +131,14 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'pixel_budget_app_v5';
+    // New clean storage key to discard any previous corrupt state
+    const STORAGE_KEY = 'budget_planner_v6_clean';
     const UNLOCK_PIN = '1234';
 
-    // Scrambled Base64 representation of the preset budget
-    const PRESET_DATA = "eyJpbmNvbWUiOjIyMzcsImNhclNhdmluZ3MiOjYxNi41MywiY2F0ZWdvcmllcyI6W3siaWQiOiJob3VzaW5nIiwidGl0bGUiOiJIb3VzaW5nICYgVXRpbGl0aWVzIiwiY29sb3IiOiIjM2I4MmY2IiwiYmlsbHMiOlt7ImlkIjoibW9ydGdhZ2UiLCJuYW1lIjoiTW9ydGdhZ2UiLCJ2YWwiOjk0MCwibWF4IjoxNTAwfSx7ImlkIjoiaW50ZXJuZXQiLCJuYW1lIjoiSW50ZXJuZXQiLCJ2YWwiOjQ0LCJtYXgiOjEyMH0seyJpZCI6InBob25lIiwibmFtZSI6IlBob25lIiwidmFsIjo2MCwibWF4IjoxNTB9XX0seyJpZCI6ImRlYnRzIiwidGl0bGUiOiJEZWJ0ICYgVmFyaWFibGUgVHJhbnNmZXJzIiwiY29sb3IiOiIjZWY0NDQ0IiwiYmlsbHMiOlt7ImlkIjoiY3JlZGl0X2NhcmQiLCJuYW1lIjoiQ3JlZGl0IENhcmQiLCJ2YWwiOjE5MCwibWF4Ijo1MDB9LHsiaWQiOiJjYXJfaW5zdXJhbmNlIiwibmFtZSI6IkNhciBJbnN1cmFuY2UiLCJ2YWwiOjE1LCJtYXgiOjE1MH0seyJpZCI6InBhcnRuZXJfdHJhbnNmZXIiLCJuYW1lIjoiUGFydG5lciBUcmFuc2ZlciIsInZhbCI6MCwibWF4Ijo0MDB9XX0seyJpZCI6ImxpZmVzdHlsZSIsInRpdGxlIjoiTGlmZXN0eWxlICYgU3Vic2NyaXB0aW9ucyIsImNvbG9yIjoiIzEwYjk4MSIsImJpbGxzIjpbeyJpZCI6ImhhaXJjdXQiLCJuYW1lIjoiSGFpcmN1dCIsInZhbCI6NzAsIm1heCI6MTUwfSx7ImlkIjoidmFwZSIsIm5hbWUiOiJWYXBlIiwidmFsIjo1MCwibWF4IjoxNTB9LHsiaWQiOiJnb29nbGVfYWkiLCJuYW1lIjoiR29vZ2xlIEFJIFBybyIsInZhbCI6MjAsIm1heCI6NTB9LHsiaWQiOiJzcG90aWZ5IiwibmFtZSI6IlNwb3RpZnkiLCJ2YWwiOjEyLjk5LCJtYXgiOjMwfSx7ImlkIjoicHJpbWUiLCJuYW1lIjoiQW1hem9uIFByaW1lIiwidmFsIjoxMCwibWF4IjozMH0seyJpZCI6Im0zNjUiLCJuYW1lIjoiTWljcm9zb2Z0IDM2NSIsInZhbCI6NSwibWF4IjoyMH1dfV19";
+    // Scrambled real figures
+    const ENCODED_BUDGET = "eyJpbmNvbWUiOjIyMzcsImNhclNhdmluZ3MiOjYxNi41MywiY2F0ZWdvcmllcyI6W3siaWQiOiJob3VzaW5nIiwidGl0bGUiOiJIb3VzaW5nICYgVXRpbGl0aWVzIiwiY29sb3IiOiIjM2I4MmY2IiwiYmlsbHMiOlt7ImlkIjoibW9ydGdhZ2UiLCJuYW1lIjoiTW9ydGdhZ2UiLCJ2YWwiOjk0MCwibWF4IjoxNTAwfSx7ImlkIjoiaW50ZXJuZXQiLCJuYW1lIjoiSW50ZXJuZXQiLCJ2YWwiOjQ0LCJtYXgiOjEyMH0seyJpZCI6InBob25lIiwibmFtZSI6IlBob25lIiwidmFsIjo2MCwibWF4IjoxNTB9XX0seyJpZCI6ImRlYnRzIiwidGl0bGUiOiJEZWJ0ICYgVmFyaWFibGUgVHJhbnNmZXJzIiwiY29sb3IiOiIjZWY0NDQ0IiwiYmlsbHMiOlt7ImlkIjoiY3JlZGl0X2NhcmQiLCJuYW1lIjoiQ3JlZGl0IENhcmQiLCJ2YWwiOjE5MCwibWF4Ijo1MDB9LHsiaWQiOiJjYXJfaW5zdXJhbmNlIiwibmFtZSI6IkNhciBJbnN1cmFuY2UiLCJ2YWwiOjE1LCJtYXgiOjE1MH0seyJpZCI6InBhcnRuZXJfdHJhbnNmZXIiLCJuYW1lIjoiUGFydG5lciBUcmFuc2ZlciIsInZhbCI6MCwibWF4Ijo0MDB9XX0seyJpZCI6ImxpZmVzdHlsZSIsInRpdGxlIjoiTGlmZXN0eWxlICYgU3Vic2NyaXB0aW9ucyIsImNvbG9yIjoiIzEwYjk4MSIsImJpbGxzIjpbeyJpZCI6ImhhaXJjdXQiLCJuYW1lIjoiSGFpcmN1dCIsInZhbCI6NzAsIm1heCI6MTUwfSx7ImlkIjoidmFwZSIsIm5hbWUiOiJWYXBlIiwidmFsIjo1MCwibWF4IjoxNTB9LHsiaWQiOiJnb29nbGVfYWkiLCJuYW1lIjoiR29vZ2xlIEFJIFBybyIsInZhbCI6MjAsIm1heCI6NTB9LHsiaWQiOiJzcG90aWZ5IiwibmFtZSI6IlNwb3RpZnkiLCJ2YWwiOjEyLjk5LCJtYXgiOjMwfSx7ImlkIjoicHJpbWUiLCJuYW1lIjoiQW1hem9uIFByaW1lIiwidmFsIjoxMCwibWF4IjozMH0seyJpZCI6Im0zNjUiLCJuYW1lIjoiTWljcm9zb2Z0IDM2NSIsInZhbCI6NSwibWF4IjoyMH1dfV19";
 
-    const BLANK_STATE = {
+    const DEFAULT_TEMPLATE = {
       income: 0.00,
       carSavings: 0.00,
       categories: [
@@ -183,10 +178,10 @@
       ]
     };
 
-    let state = JSON.parse(JSON.stringify(BLANK_STATE));
+    let state = JSON.parse(JSON.stringify(DEFAULT_TEMPLATE));
 
     function fmt(n) {
-      return '£' + Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return '£' + Number(n || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     function saveState() {
@@ -199,8 +194,11 @@
       try {
         const d = localStorage.getItem(STORAGE_KEY);
         if (d) {
-          state = JSON.parse(d);
-          return true;
+          const parsed = JSON.parse(d);
+          if (parsed && Array.isArray(parsed.categories)) {
+            state = parsed;
+            return true;
+          }
         }
       } catch (e) {}
       return false;
@@ -208,10 +206,11 @@
 
     function renderCards() {
       const container = document.getElementById('categoriesContainer');
+      if (!container) return;
       container.innerHTML = '';
 
       state.categories.forEach(cat => {
-        let catTotal = cat.bills.reduce((s, b) => s + (parseFloat(b.val) || 0), 0);
+        let catTotal = (cat.bills || []).reduce((s, b) => s + (parseFloat(b.val) || 0), 0);
 
         const card = document.createElement('div');
         card.className = 'bg-slate-800/40 border border-slate-800 rounded-2xl p-4 space-y-3';
@@ -230,7 +229,7 @@
         container.appendChild(card);
         const billsBox = card.querySelector(`#catBills_${cat.id}`);
 
-        cat.bills.forEach(bill => {
+        (cat.bills || []).forEach(bill => {
           const row = document.createElement('div');
           row.className = 'space-y-1';
           const maxVal = Math.max(bill.max || 100, Math.ceil((bill.val || 1) * 1.5));
@@ -240,7 +239,7 @@
               <span class="text-slate-300">${bill.name}</span>
               <div class="flex items-center gap-1">
                 <span class="text-slate-400">£</span>
-                <input type="number" id="num_${bill.id}" value="${bill.val}" step="1" min="0" class="w-20 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-right font-bold text-white text-xs tabular-nums">
+                <input type="number" id="num_${bill.id}" value="${bill.val}" step="1" min="0" class="w-20 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-right font-bold text-white text-xs tabular-nums focus:outline-none focus:border-blue-500">
               </div>
             </div>
             <input type="range" id="rng_${bill.id}" min="0" max="${maxVal}" step="1" value="${bill.val}" class="w-full">
@@ -262,7 +261,7 @@
           numEl.addEventListener('input', (e) => {
             const val = parseFloat(e.target.value) || 0;
             bill.val = val;
-            if (val > rngEl.max) rngEl.max = Math.ceil(val * 1.3);
+            if (val > parseFloat(rngEl.max)) rngEl.max = Math.ceil(val * 1.3);
             rngEl.value = val;
             saveState();
             recalculate();
@@ -276,9 +275,9 @@
       const car = parseFloat(state.carSavings) || 0;
 
       let totalBills = 0;
-      state.categories.forEach(cat => {
+      (state.categories || []).forEach(cat => {
         let catSum = 0;
-        cat.bills.forEach(b => catSum += (parseFloat(b.val) || 0));
+        (cat.bills || []).forEach(b => catSum += (parseFloat(b.val) || 0));
         totalBills += catSum;
         const totalEl = document.getElementById(`catTotal_${cat.id}`);
         if (totalEl) totalEl.innerText = fmt(catSum);
@@ -289,138 +288,132 @@
       const weekly = (discretionary * 12) / 52;
       const daily = discretionary / 30.4167;
 
-      document.getElementById('inputIncome').value = state.income;
-      document.getElementById('inputCar').value = state.carSavings;
-      document.getElementById('sliderCar').value = state.carSavings;
+      const incInput = document.getElementById('inputIncome');
+      const carInput = document.getElementById('inputCar');
+      const carSlider = document.getElementById('sliderCar');
 
-      document.getElementById('netAfterCar').innerText = fmt(afterCar);
-      document.getElementById('displayCarMonthly').innerText = fmt(car);
-      document.getElementById('displayCarAnnual').innerText = fmt(car * 12);
-      document.getElementById('displayTotalBills').innerText = fmt(totalBills);
+      if (incInput) incInput.value = state.income;
+      if (carInput) carInput.value = state.carSavings;
+      if (carSlider) carSlider.value = state.carSavings;
+
+      const elNetAfterCar = document.getElementById('netAfterCar');
+      const elDisplayCar = document.getElementById('displayCarMonthly');
+      const elDisplayCarAnn = document.getElementById('displayCarAnnual');
+
+      if (elNetAfterCar) elNetAfterCar.innerText = fmt(afterCar);
+      if (elDisplayCar) elDisplayCar.innerText = fmt(car);
+      if (elDisplayCarAnn) elDisplayCarAnn.innerText = fmt(car * 12);
 
       const heroDisc = document.getElementById('heroDiscretionary');
+      const heroWeek = document.getElementById('heroWeekly');
+      const heroDay = document.getElementById('heroDaily');
       const badge = document.getElementById('budgetStatusBadge');
 
-      heroDisc.innerText = fmt(discretionary);
-      document.getElementById('heroWeekly').innerText = fmt(weekly);
-      document.getElementById('heroDaily').innerText = fmt(daily);
+      if (heroDisc) heroDisc.innerText = fmt(discretionary);
+      if (heroWeek) heroWeek.innerText = fmt(weekly);
+      if (heroDay) heroDay.innerText = fmt(daily);
 
-      if (inc === 0 && totalBills === 0) {
-        heroDisc.className = 'text-4xl font-extrabold text-slate-300 tabular-nums';
-        badge.innerText = 'Blank';
-        badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700';
-      } else if (discretionary >= 150) {
-        heroDisc.className = 'text-4xl font-extrabold text-emerald-400 tabular-nums';
-        badge.innerText = 'Comfortable';
-        badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-      } else if (discretionary >= 0) {
-        heroDisc.className = 'text-4xl font-extrabold text-blue-400 tabular-nums';
-        badge.innerText = 'Tight';
-        badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30';
-      } else {
-        heroDisc.className = 'text-4xl font-extrabold text-rose-500 tabular-nums';
-        badge.innerText = 'Deficit';
-        badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30';
-      }
-
-      if (inc > 0) {
-        const bPct = Math.max(0, Math.min(100, (totalBills / inc) * 100));
-        const cPct = Math.max(0, Math.min(100, (car / inc) * 100));
-        const pPct = Math.max(0, Math.min(100, 100 - bPct - cPct));
-
-        document.getElementById('barBills').style.width = bPct + '%';
-        document.getElementById('barCar').style.width = cPct + '%';
-        document.getElementById('barPocket').style.width = pPct + '%';
+      if (badge && heroDisc) {
+        if (inc === 0 && totalBills === 0) {
+          heroDisc.className = 'text-4xl font-extrabold text-slate-300 tabular-nums';
+          badge.innerText = 'Neutral';
+          badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700';
+        } else if (discretionary >= 150) {
+          heroDisc.className = 'text-4xl font-extrabold text-emerald-400 tabular-nums';
+          badge.innerText = 'Comfortable';
+          badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        } else if (discretionary >= 0) {
+          heroDisc.className = 'text-4xl font-extrabold text-blue-400 tabular-nums';
+          badge.innerText = 'Tight';
+          badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30';
+        } else {
+          heroDisc.className = 'text-4xl font-extrabold text-rose-500 tabular-nums';
+          badge.innerText = 'Deficit';
+          badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30';
+        }
       }
     }
 
-    function onDataChanged() {
-      state.income = parseFloat(document.getElementById('inputIncome').value) || 0;
+    function onIncomeChange(v) {
+      state.income = parseFloat(v) || 0;
       saveState();
       recalculate();
     }
 
-    function syncCarInput(v) {
+    function onCarChange(v) {
       const val = parseFloat(v) || 0;
       state.carSavings = val;
-      document.getElementById('sliderCar').value = val;
+      const input = document.getElementById('inputCar');
+      const slider = document.getElementById('sliderCar');
+      if (input) input.value = val;
+      if (slider) slider.value = val;
       saveState();
       recalculate();
     }
 
-    function syncCarSlider(v) {
-      const val = parseFloat(v) || 0;
-      state.carSavings = val;
-      document.getElementById('inputCar').value = val;
-      saveState();
-      recalculate();
-    }
-
-    function openPinModal() {
-      document.getElementById('pinCodeInput').value = '';
-      document.getElementById('pinErrorMsg').classList.add('hidden');
-      document.getElementById('pinModal').classList.remove('hidden');
-      setTimeout(() => document.getElementById('pinCodeInput').focus(), 150);
+    function handleUnlockClick() {
+      // Primary: Show inline modal
+      const modal = document.getElementById('pinModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        const inp = document.getElementById('pinCodeInput');
+        if (inp) {
+          inp.value = '';
+          setTimeout(() => inp.focus(), 100);
+        }
+        return;
+      }
+      // Fail-safe browser prompt
+      const pin = prompt('Enter 4-digit PIN:');
+      if (pin === UNLOCK_PIN) {
+        applyPreset();
+      } else if (pin !== null) {
+        alert('Incorrect PIN');
+      }
     }
 
     function closePinModal() {
-      document.getElementById('pinModal').classList.add('hidden');
+      const modal = document.getElementById('pinModal');
+      if (modal) modal.style.display = 'none';
+      const err = document.getElementById('pinErrorMsg');
+      if (err) err.style.display = 'none';
     }
 
     function unlockBudgetWithPIN() {
-      const pin = document.getElementById('pinCodeInput').value.trim();
+      const pinEl = document.getElementById('pinCodeInput');
+      const pin = pinEl ? pinEl.value.trim() : '';
       if (pin !== UNLOCK_PIN) {
-        document.getElementById('pinErrorMsg').classList.remove('hidden');
+        const err = document.getElementById('pinErrorMsg');
+        if (err) err.style.display = 'block';
         return;
       }
+      closePinModal();
+      applyPreset();
+    }
 
+    function applyPreset() {
       try {
-        const decoded = JSON.parse(atob(PRESET_DATA));
+        const decoded = JSON.parse(atob(ENCODED_BUDGET));
         if (decoded && decoded.income) {
           state = decoded;
           saveState();
-          closePinModal();
           renderCards();
           recalculate();
           showToast('✓ Budget unlocked & loaded!');
         }
-      } catch (err) {
-        showToast('Error decoding data');
+      } catch (e) {
+        alert('Error loading preset');
       }
     }
 
     function copySummary() {
       let bSum = 0;
       let lines = [];
-      state.categories.forEach(c => {
-        c.bills.forEach(b => {
-          bSum += b.val;
+      (state.categories || []).forEach(c => {
+        (c.bills || []).forEach(b => {
+          bSum += (parseFloat(b.val) || 0);
           lines.push(`- ${b.name}: ${fmt(b.val)}`);
         });
       });
       const disc = (state.income - state.carSavings) - bSum;
-      const text = `Monthly Pay: ${fmt(state.income)}\nTotal Bills: ${fmt(bSum)}\n${lines.join('\n')}\nCar Savings: ${fmt(state.carSavings)}\nRemaining Pocket: ${fmt(disc)}`;
-      navigator.clipboard.writeText(text).then(() => showToast('✓ Summary copied!'));
-    }
-
-    let toastT;
-    function showToast(m) {
-      const t = document.getElementById('toast');
-      t.innerText = m;
-      t.classList.remove('opacity-0', 'pointer-events-none');
-      clearTimeout(toastT);
-      toastT = setTimeout(() => t.classList.add('opacity-0', 'pointer-events-none'), 2200);
-    }
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
-
-    window.onload = function() {
-      loadState();
-      renderCards();
-      recalculate();
-    };
-  </script>
-</body>
-</html>
+      const text = `Take-Home Pay: ${fmt(state.income)}\nTotal Bills: $
