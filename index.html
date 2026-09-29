@@ -4,329 +4,417 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0f172a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Budget">
-  <meta name="description" content="Personal Budget & Real-time Spending Calculator">
   <title>Budget Planner</title>
-
-  <!-- PWA Manifest & App Icons -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
   <link rel="apple-touch-icon" href="icon-192.png">
-
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Font: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-    input[type=range] {
-      -webkit-appearance: none;
-      appearance: none;
-      background: transparent;
-      cursor: pointer;
-    }
-    input[type=range]::-webkit-slider-runnable-track {
-      height: 6px;
-      border-radius: 9999px;
-      background: rgba(148, 163, 184, 0.25);
-    }
-    input[type=range]::-moz-range-track {
-      height: 6px;
-      border-radius: 9999px;
-      background: rgba(148, 163, 184, 0.25);
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      height: 20px;
-      width: 20px;
-      border-radius: 50%;
-      background: #3b82f6;
-      border: 2px solid #ffffff;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      margin-top: -7px;
-      transition: transform 0.15s ease, background-color 0.15s ease;
-    }
-    input[type=range]::-moz-range-thumb {
-      height: 20px;
-      width: 20px;
-      border-radius: 50%;
-      background: #3b82f6;
-      border: 2px solid #ffffff;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      transition: transform 0.15s ease, background-color 0.15s ease;
-    }
-    input[type=range]:active::-webkit-slider-thumb {
-      transform: scale(1.15);
-      background: #2563eb;
-    }
+    body { font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
+    input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 9999px; background: rgba(148,163,184,0.25); }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; border: 2px solid #ffffff; margin-top: -7px; }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen antialiased selection:bg-blue-600 selection:text-white">
-  <div class="max-w-xl mx-auto px-4 py-6 md:py-8 space-y-5">
+<body class="bg-slate-900 text-slate-100 min-h-screen selection:bg-blue-600 selection:text-white p-4 max-w-xl mx-auto space-y-4">
 
-    <!-- App Header & Actions Bar -->
-    <header class="flex items-center justify-between gap-3 pb-2 border-b border-slate-800">
+  <!-- Header -->
+  <header class="flex items-center justify-between border-b border-slate-800 pb-3">
+    <div class="flex items-center gap-2">
+      <span class="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow">£</span>
       <div>
-        <div class="flex items-center gap-2">
-          <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20 text-sm">£</span>
-          <h1 class="text-xl font-bold tracking-tight text-white">Budget Planner</h1>
-        </div>
-        <p class="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
-          <span>Personal Budget</span>
-          <span class="inline-block w-1 h-1 rounded-full bg-slate-600"></span>
-          <span id="storageBadge" class="text-emerald-400 text-[10px] font-semibold">🔒 Phone storage active</span>
-        </p>
-      </div>
-      <div class="flex items-center gap-2">
-        <button id="unlockBtn" onclick="openPinModal()" title="Unlock full preset with PIN" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition active:scale-95">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-          <span id="unlockBtnText">Unlock Budget</span>
-        </button>
-        <button id="copySummaryBtn" onclick="copyBudgetSummary()" title="Copy text summary to clipboard" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition active:scale-95 border border-slate-700">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-          <span>Copy</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- Primary Hero Card: Discretionary Spending Remaining -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-900/60 via-slate-800/80 to-slate-900 border border-blue-500/30 p-5 shadow-xl shadow-blue-950/40">
-      <div class="flex items-center justify-between">
-        <span class="text-xs font-bold tracking-wider uppercase text-blue-400">Spending Money Left</span>
-        <span id="spendingBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-700 text-slate-300 font-semibold border border-slate-600">Neutral</span>
-      </div>
-
-      <div class="mt-2 flex items-baseline gap-2">
-        <span id="heroMonthly" class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white tabular-nums">£0.00</span>
-        <span class="text-sm font-medium text-slate-400">/ month</span>
-      </div>
-
-      <!-- Quick breakdown: Weekly & Daily -->
-      <div class="mt-4 grid grid-cols-2 gap-3 pt-3 border-t border-slate-700/60">
-        <div class="bg-slate-900/60 rounded-xl p-2.5 border border-slate-800">
-          <span class="text-[11px] uppercase font-semibold text-slate-400 block">Weekly Pocket</span>
-          <span id="heroWeekly" class="text-lg font-bold text-slate-100 tabular-nums">£0.00</span>
-        </div>
-        <div class="bg-slate-900/60 rounded-xl p-2.5 border border-slate-800">
-          <span class="text-[11px] uppercase font-semibold text-slate-400 block">Daily Allowance</span>
-          <span id="heroDaily" class="text-lg font-bold text-slate-100 tabular-nums">£0.00</span>
-        </div>
+        <h1 class="text-lg font-bold text-white leading-tight">Budget Planner</h1>
+        <p class="text-[10px] text-emerald-400 font-semibold" id="storageStatus">🔒 Local Phone Storage Active</p>
       </div>
     </div>
-
-    <!-- KPI Row: Net Take-Home & Car Fund -->
-    <div class="grid grid-cols-2 gap-3">
-      <!-- Income & Net Available -->
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 flex flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between text-xs text-slate-400 font-medium">
-            <span>Take-Home Pay</span>
-            <span class="text-slate-300">Net</span>
-          </div>
-          <div class="mt-1 flex items-center gap-1.5">
-            <span class="text-sm text-slate-400">£</span>
-            <input type="number" id="incomeInput" value="0.00" step="10" min="0" oninput="handleIncomeChange(this.value)" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-2 py-1 text-base font-bold text-white focus:outline-none focus:border-blue-500 tabular-nums">
-          </div>
-        </div>
-        <p class="text-[11px] text-slate-400 mt-2">Available after Car: <span id="netAvailableText" class="font-semibold text-slate-200">£0.00</span></p>
-      </div>
-
-      <!-- Dedicated Car Savings Tile -->
-      <div class="bg-slate-800/60 border border-emerald-500/30 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden">
-        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
-        <div>
-          <div class="flex items-center justify-between text-xs text-emerald-400 font-semibold">
-            <span>Car Savings Fund</span>
-            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded">Auto</span>
-          </div>
-          <div class="mt-1 flex items-baseline gap-1">
-            <span id="carFundDisplay" class="text-xl font-bold text-emerald-400 tabular-nums">£0.00</span>
-            <span class="text-xs text-slate-400">/ mo</span>
-          </div>
-        </div>
-        <p class="text-[11px] text-slate-400 mt-2">Annual Savings: <strong id="carAnnualDisplay" class="text-emerald-300">£0.00</strong></p>
-      </div>
-    </div>
-
-    <!-- Proportional Cash Flow Distribution Bar -->
-    <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-4 space-y-2">
-      <div class="flex justify-between items-center text-xs">
-        <span class="font-medium text-slate-300">Monthly Cash Distribution</span>
-        <span class="text-slate-400">Bills: <strong id="totalBillsSummary" class="text-slate-200 font-semibold">£0.00</strong></span>
-      </div>
-      <div class="h-3 w-full bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
-        <div id="barBills" class="bg-blue-500 h-full transition-all duration-300" style="width: 0%;" title="Living Bills"></div>
-        <div id="barCar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%;" title="Car Savings Fund"></div>
-        <div id="barDiscretionary" class="bg-amber-400 h-full transition-all duration-300" style="width: 0%;" title="Pocket Money Left"></div>
-      </div>
-      <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-        <div class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
-          <span>Living Bills (<span id="pctBills">0%</span>)</span>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-          <span>Car Fund (<span id="pctCar">0%</span>)</span>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
-          <span>Pocket (<span id="pctPocket">0%</span>)</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Interactive Bills Section -->
-    <div class="space-y-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Living Bills & Variable Transfers</h2>
-        <div class="flex items-center gap-2">
-          <button id="toggleAllBtn" onclick="toggleAllCategories()" class="text-xs text-slate-400 hover:text-slate-200 font-medium px-2 py-1 rounded hover:bg-slate-800/80 transition border border-transparent hover:border-slate-700">
-            Collapse All
-          </button>
-          <button onclick="openAddBillModal()" class="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-semibold px-2 py-1 rounded hover:bg-blue-950/40 transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            <span>Add Bill</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Categories Container -->
-      <div id="categoriesList" class="space-y-4"></div>
-    </div>
-
-    <!-- Car Savings Adjuster (Collapsible) -->
-    <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-5 space-y-4">
-      <button type="button" onclick="toggleCarSection()" class="w-full flex justify-between items-center text-left group">
-        <div>
-          <h3 class="text-sm font-bold text-white flex items-center gap-2 group-hover:text-emerald-400 transition-colors">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-            Dedicated Car Fund Transfer
-          </h3>
-          <p class="text-xs text-slate-400 mt-0.5">Separate savings account transfer</p>
-        </div>
-        <div class="flex items-center gap-2.5">
-          <span id="carFundHeaderVal" class="text-base font-bold text-emerald-400 tabular-nums">£0.00</span>
-          <svg id="carChevron" class="w-4 h-4 text-slate-400 group-hover:text-emerald-300 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </div>
+    <div class="flex gap-2">
+      <button onclick="openPinModal()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow transition active:scale-95">
+        Unlock Budget
       </button>
+      <button onclick="copySummary()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition active:scale-95">
+        Copy
+      </button>
+    </div>
+  </header>
 
-      <div id="carAdjusterContent" class="space-y-2 pt-1 border-t border-slate-700/50">
-        <div class="flex items-center gap-3 pt-2">
-          <input type="range" id="carSavingsSlider" min="0" max="1000" step="5" value="0" oninput="handleCarSavingsChange(this.value)" class="w-full accent-emerald-500">
-          <div class="w-28 flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
-            <span class="text-xs text-slate-400 mr-1">£</span>
-            <input type="number" id="carSavingsInput" value="0.00" step="5" min="0" oninput="handleCarSavingsChange(this.value)" class="w-full bg-transparent text-sm font-bold text-right text-emerald-400 focus:outline-none tabular-nums">
-          </div>
-        </div>
-        <div class="flex justify-between text-[11px] text-slate-500">
-          <span>£0 (Keep in pocket)</span>
-          <span>£500 / mo</span>
-          <span>£1,000 / mo</span>
-        </div>
+  <!-- Hero Card: Spending Remaining -->
+  <div class="rounded-2xl bg-gradient-to-br from-blue-950 via-slate-800 to-slate-900 border border-blue-500/30 p-5 shadow-lg space-y-3">
+    <div class="flex justify-between items-center">
+      <span class="text-xs uppercase font-bold tracking-wider text-blue-400">Spending Money Left</span>
+      <span id="budgetStatusBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">Neutral</span>
+    </div>
+    <div class="flex items-baseline gap-2">
+      <span id="heroDiscretionary" class="text-4xl font-extrabold text-white tabular-nums">£0.00</span>
+      <span class="text-xs text-slate-400">/ month</span>
+    </div>
+    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-700/60 text-xs">
+      <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+        <span class="text-slate-400 block text-[10px] uppercase font-semibold">Weekly Pocket</span>
+        <span id="heroWeekly" class="text-base font-bold text-slate-100 tabular-nums">£0.00</span>
+      </div>
+      <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+        <span class="text-slate-400 block text-[10px] uppercase font-semibold">Daily Allowance</span>
+        <span id="heroDaily" class="text-base font-bold text-slate-100 tabular-nums">£0.00</span>
       </div>
     </div>
-
-    <!-- Footer Note -->
-    <footer class="text-center text-xs text-slate-500 pt-2 pb-8 space-y-1">
-      <p>Personal Budget & Savings Planner</p>
-      <p>Phone storage active & private.</p>
-    </footer>
-
   </div>
 
-  <!-- Modal: PIN Unlock for Private Data -->
+  <!-- Income & Car Fund Tiles -->
+  <div class="grid grid-cols-2 gap-3">
+    <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 space-y-1">
+      <div class="flex justify-between text-xs text-slate-400 font-medium">
+        <span>Take-Home Pay</span>
+        <span class="text-slate-300">Net</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <span class="text-sm text-slate-400">£</span>
+        <input type="number" id="inputIncome" value="0.00" step="10" min="0" oninput="onDataChanged()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-sm font-bold text-white focus:outline-none focus:border-blue-500 tabular-nums">
+      </div>
+      <p class="text-[10px] text-slate-400 pt-1">After Car: <strong id="netAfterCar" class="text-slate-200">£0.00</strong></p>
+    </div>
+
+    <div class="bg-slate-800/60 border border-emerald-500/30 rounded-2xl p-3.5 space-y-1">
+      <div class="flex justify-between text-xs text-emerald-400 font-semibold">
+        <span>Car Savings Fund</span>
+        <span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-1 rounded">Auto</span>
+      </div>
+      <div class="flex items-baseline gap-1">
+        <span id="displayCarMonthly" class="text-lg font-bold text-emerald-400 tabular-nums">£0.00</span>
+        <span class="text-[10px] text-slate-400">/ mo</span>
+      </div>
+      <p class="text-[10px] text-slate-400 pt-1">Annual: <strong id="displayCarAnnual" class="text-emerald-300">£0.00</strong></p>
+    </div>
+  </div>
+
+  <!-- Proportional Bar -->
+  <div class="bg-slate-800/40 border border-slate-800 rounded-xl p-3 space-y-1.5">
+    <div class="flex justify-between text-xs text-slate-300">
+      <span>Distribution</span>
+      <span>Total Bills: <strong id="displayTotalBills" class="text-white">£0.00</strong></span>
+    </div>
+    <div class="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden flex">
+      <div id="barBills" class="bg-blue-500 h-full transition-all" style="width: 0%"></div>
+      <div id="barCar" class="bg-emerald-500 h-full transition-all" style="width: 0%"></div>
+      <div id="barPocket" class="bg-amber-400 h-full transition-all" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- Dedicated Car Savings Slider -->
+  <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-4 space-y-2">
+    <div class="flex justify-between items-center text-xs">
+      <span class="font-bold text-emerald-400">Dedicated Car Fund Transfer</span>
+      <div class="flex items-center gap-1">
+        <span class="text-slate-400">£</span>
+        <input type="number" id="inputCar" value="0.00" step="5" min="0" oninput="syncCarInput(this.value)" class="w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-right font-bold text-emerald-400 text-xs tabular-nums">
+      </div>
+    </div>
+    <input type="range" id="sliderCar" min="0" max="1000" step="5" value="0" oninput="syncCarSlider(this.value)" class="w-full accent-emerald-500">
+  </div>
+
+  <!-- Bills Section -->
+  <div class="space-y-3">
+    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Living Bills & Variable Transfers</h2>
+    <div id="categoriesContainer" class="space-y-3"></div>
+  </div>
+
+  <!-- PIN Modal -->
   <div id="pinModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xs p-5 space-y-4 shadow-2xl text-center">
-      <div class="w-10 h-10 mx-auto rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-      </div>
-
-      <div>
-        <h3 class="text-base font-bold text-white">Unlock Budget</h3>
-        <p class="text-xs text-slate-400 mt-1">Enter your 4-digit PIN to load your budget breakdown into this phone.</p>
-      </div>
-
-      <div>
-        <input type="password" id="pinInput" maxlength="6" inputmode="numeric" placeholder="••••" class="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 text-center text-lg tracking-widest text-white font-bold focus:outline-none focus:border-blue-500">
-        <p id="pinError" class="text-rose-400 text-xs mt-1.5 hidden">Incorrect PIN. Try again.</p>
-      </div>
-
-      <div class="flex gap-2 pt-1">
-        <button onclick="closePinModal()" class="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition">Cancel</button>
-        <button onclick="verifyAndUnlock()" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-blue-600/30 transition">Unlock</button>
+      <h3 class="text-base font-bold text-white">Unlock Preset Budget</h3>
+      <p class="text-xs text-slate-400">Enter your 4-digit PIN to load your budget into this device.</p>
+      <input type="password" id="pinCodeInput" maxlength="6" inputmode="numeric" placeholder="••••" class="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 text-center text-lg text-white font-bold tracking-widest focus:outline-none focus:border-blue-500">
+      <p id="pinErrorMsg" class="text-rose-400 text-xs hidden">Incorrect PIN. Try 1234.</p>
+      <div class="flex gap-2">
+        <button onclick="closePinModal()" class="flex-1 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cancel</button>
+        <button onclick="unlockBudgetWithPIN()" class="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold">Unlock</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal: Add Custom Bill -->
-  <div id="addBillModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="text-base font-bold text-white">Add Custom Bill</h3>
-        <button onclick="closeAddBillModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
-      </div>
-
-      <div class="space-y-3">
-        <div>
-          <label class="text-xs font-medium text-slate-300 block mb-1">Bill Name</label>
-          <input type="text" id="newBillName" placeholder="e.g. Council Tax, Gym" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
-        </div>
-
-        <div>
-          <label class="text-xs font-medium text-slate-300 block mb-1">Monthly Cost (£)</label>
-          <input type="number" id="newBillCost" placeholder="0.00" step="1" min="0" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
-        </div>
-
-        <div>
-          <label class="text-xs font-medium text-slate-300 block mb-1">Category</label>
-          <select id="newBillCategory" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
-            <option value="housing">Housing & Utilities</option>
-            <option value="debts">Debt & Variable Transfers</option>
-            <option value="lifestyle" selected>Lifestyle & Subscriptions</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="flex gap-2 pt-2">
-        <button onclick="closeAddBillModal()" class="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold rounded-xl transition">Cancel</button>
-        <button onclick="confirmAddBill()" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-blue-600/30 transition">Add Bill</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast Notification Container -->
-  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 bg-slate-800 text-slate-100 border border-slate-700 text-xs font-medium rounded-full shadow-2xl transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2 z-50">
-    <span id="toastIcon">✓</span>
-    <span id="toastMsg">Notification message</span>
+  <!-- Toast Notice -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 text-white border border-slate-700 text-xs font-semibold rounded-full shadow-2xl transition opacity-0 pointer-events-none z-50">
+    Saved
   </div>
 
   <script>
-    const STORAGE_KEY = 'pixel_budget_app_data_v4';
-    const DEFAULT_PIN = '1234';
+    const STORAGE_KEY = 'pixel_budget_app_v5';
+    const UNLOCK_PIN = '1234';
 
-    // Encrypted/Scrambled Base64 string of your private budget.
-    // Anyone viewing your public GitHub only sees this random scramble of letters.
-    const SCRAMBLED_BUDGET = "eyJpbmNvbWUiOjIyMzcsImNhclNhdmluZ3MiOjYxNi41MywiY2FyQ29sbGFwc2VkIjpmYWxzZSwiY2F0ZWdvcmllcyI6W3siaWQiOiJob3VzaW5nIiwidGl0bGUiOiJIb3VzaW5nICYgVXRpbGl0aWVzIiwiY29sb3IiOiIjM2I4MmY2IiwiY29sbGFwc2VkIjpmYWxzZSwiYmlsbHMiOlt7ImlkIjoibW9ydGdhZ2UiLCJuYW1lIjoiTW9ydGdhZ2UiLCJ2YWwiOjk0MCwibWluIjowLCJtYXgiOjE1MDAsInN0ZXAiOjEwfSx7ImlkIjoiaW50ZXJuZXQiLCJuYW1lIjoiSW50ZXJuZXQiLCJ2YWwiOjQ0LCJtaW4iOjAsIm1heCI6MTIwLCJzdGVwIjoxfSx7ImlkIjoicGhvbmUiLCJuYW1lIjoiUGhvbmUiLCJ2YWwiOjYwLCJtaW4iOjAsIm1heCI6MTUwLCJzdGVwIjo1fV19LHsiaWQiOiJkZWJ0cyIsInRpdGxlIjoiRGVidCAmIFZhcmlhYmxlIFRyYW5zZmVycyIsImNvbG9yIjoiI2VmNDQ0NCIsImNvbGxhcHNlZCI6ZmFsc2UsImJpbGxzIjpbeyJpZCI6ImNyZWRpdF9jYXJkIiwibmFtZSI6IkNyZWRpdCBDYXJkIiwidmFsIjoxOTAsIm1pbiI6MCwibWF4Ijo1MDAsInN0ZXAiOjEwfSx7ImlkIjoiY2FyX2luc3VyYW5jZSIsIm5hbWUiOiJDYXIgSW5zdXJhbmNlIiwidmFsIjoxNSwibWluIjowLCJtYXgiOjE1MCwic3RlcCI6NX0seyJpZCI6InBhcnRuZXJfdHJhbnNmZXIiLCJuYW1lIjoiUGFydG5lciBUcmFuc2ZlciAvIFZhcmlhYmxlIiwidmFsIjowLCJtaW4iOjAsIm1heCI6NDAwLCJzdGVwIjoxMH1dfSx7ImlkIjoibGlmZXN0eWxlIiwidGl0bGUiOiJMaWZlc3R5bGUgJiBTdWJzY3JpcHRpb25zIiwiY29sb3IiOiIjMTBiOTgxIiwiY29sbGFwc2VkIjpmYWxzZSwiYmlsbHMiOlt7ImlkIjoiaGFpcmN1dCIsIm5hbWUiOiJIYWlyY3V0IiwidmFsIjo3MCwibWluIjowLCJtYXgiOjE1MCwic3RlcCI6NX0seyJpZCI6InZhcGUiLCJuYW1lIjoiVmFwZSIsInZhbCI6NTAsIm1pbiI6MCwibWF4IjoxNTAsInN0ZXAiOjV9LHsiaWQiOiJnb29nbGVfYWkiLCJuYW1lIjoiR29vZ2xlIEFJIFBybyIsInZhbCI6MjAsIm1pbiI6MCwibWF4Ijo1MCwic3RlcCI6NX0seyJpZCI6InNwb3RpZnkiLCJuYW1lIjoiU3BvdGlmeSIsInZhbCI6MTIuOTksIm1pbiI6MCwibWF4IjozMCwic3RlcCI6MX0seyJpZCI6InByaW1lIiwibmF
+    // Scrambled Base64 representation of the preset budget
+    const PRESET_DATA = "eyJpbmNvbWUiOjIyMzcsImNhclNhdmluZ3MiOjYxNi41MywiY2F0ZWdvcmllcyI6W3siaWQiOiJob3VzaW5nIiwidGl0bGUiOiJIb3VzaW5nICYgVXRpbGl0aWVzIiwiY29sb3IiOiIjM2I4MmY2IiwiYmlsbHMiOlt7ImlkIjoibW9ydGdhZ2UiLCJuYW1lIjoiTW9ydGdhZ2UiLCJ2YWwiOjk0MCwibWF4IjoxNTAwfSx7ImlkIjoiaW50ZXJuZXQiLCJuYW1lIjoiSW50ZXJuZXQiLCJ2YWwiOjQ0LCJtYXgiOjEyMH0seyJpZCI6InBob25lIiwibmFtZSI6IlBob25lIiwidmFsIjo2MCwibWF4IjoxNTB9XX0seyJpZCI6ImRlYnRzIiwidGl0bGUiOiJEZWJ0ICYgVmFyaWFibGUgVHJhbnNmZXJzIiwiY29sb3IiOiIjZWY0NDQ0IiwiYmlsbHMiOlt7ImlkIjoiY3JlZGl0X2NhcmQiLCJuYW1lIjoiQ3JlZGl0IENhcmQiLCJ2YWwiOjE5MCwibWF4Ijo1MDB9LHsiaWQiOiJjYXJfaW5zdXJhbmNlIiwibmFtZSI6IkNhciBJbnN1cmFuY2UiLCJ2YWwiOjE1LCJtYXgiOjE1MH0seyJpZCI6InBhcnRuZXJfdHJhbnNmZXIiLCJuYW1lIjoiUGFydG5lciBUcmFuc2ZlciIsInZhbCI6MCwibWF4Ijo0MDB9XX0seyJpZCI6ImxpZmVzdHlsZSIsInRpdGxlIjoiTGlmZXN0eWxlICYgU3Vic2NyaXB0aW9ucyIsImNvbG9yIjoiIzEwYjk4MSIsImJpbGxzIjpbeyJpZCI6ImhhaXJjdXQiLCJuYW1lIjoiSGFpcmN1dCIsInZhbCI6NzAsIm1heCI6MTUwfSx7ImlkIjoidmFwZSIsIm5hbWUiOiJWYXBlIiwidmFsIjo1MCwibWF4IjoxNTB9LHsiaWQiOiJnb29nbGVfYWkiLCJuYW1lIjoiR29vZ2xlIEFJIFBybyIsInZhbCI6MjAsIm1heCI6NTB9LHsiaWQiOiJzcG90aWZ5IiwibmFtZSI6IlNwb3RpZnkiLCJ2YWwiOjEyLjk5LCJtYXgiOjMwfSx7ImlkIjoicHJpbWUiLCJuYW1lIjoiQW1hem9uIFByaW1lIiwidmFsIjoxMCwibWF4IjozMH0seyJpZCI6Im0zNjUiLCJuYW1lIjoiTWljcm9zb2Z0IDM2NSIsInZhbCI6NSwibWF4IjoyMH1dfV19";
+
+    const BLANK_STATE = {
+      income: 0.00,
+      carSavings: 0.00,
+      categories: [
+        {
+          id: 'housing',
+          title: 'Housing & Utilities',
+          color: '#3b82f6',
+          bills: [
+            { id: 'mortgage', name: 'Mortgage', val: 0.00, max: 1500 },
+            { id: 'internet', name: 'Internet', val: 0.00, max: 120 },
+            { id: 'phone', name: 'Phone', val: 0.00, max: 150 }
+          ]
+        },
+        {
+          id: 'debts',
+          title: 'Debt & Variable Transfers',
+          color: '#ef4444',
+          bills: [
+            { id: 'credit_card', name: 'Credit Card', val: 0.00, max: 500 },
+            { id: 'car_insurance', name: 'Car Insurance', val: 0.00, max: 150 },
+            { id: 'partner_transfer', name: 'Partner Transfer', val: 0.00, max: 400 }
+          ]
+        },
+        {
+          id: 'lifestyle',
+          title: 'Lifestyle & Subscriptions',
+          color: '#10b981',
+          bills: [
+            { id: 'haircut', name: 'Haircut', val: 0.00, max: 150 },
+            { id: 'vape', name: 'Vape', val: 0.00, max: 150 },
+            { id: 'google_ai', name: 'Google AI Pro', val: 0.00, max: 50 },
+            { id: 'spotify', name: 'Spotify', val: 0.00, max: 30 },
+            { id: 'prime', name: 'Amazon Prime', val: 0.00, max: 30 },
+            { id: 'm365', name: 'Microsoft 365', val: 0.00, max: 20 }
+          ]
+        }
+      ]
+    };
+
+    let state = JSON.parse(JSON.stringify(BLANK_STATE));
+
+    function fmt(n) {
+      return '£' + Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function loadState() {
+      try {
+        const d = localStorage.getItem(STORAGE_KEY);
+        if (d) {
+          state = JSON.parse(d);
+          return true;
+        }
+      } catch (e) {}
+      return false;
+    }
+
+    function renderCards() {
+      const container = document.getElementById('categoriesContainer');
+      container.innerHTML = '';
+
+      state.categories.forEach(cat => {
+        let catTotal = cat.bills.reduce((s, b) => s + (parseFloat(b.val) || 0), 0);
+
+        const card = document.createElement('div');
+        card.className = 'bg-slate-800/40 border border-slate-800 rounded-2xl p-4 space-y-3';
+        
+        card.innerHTML = `
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${cat.color}"></span>
+              <h3 class="text-sm font-bold text-white">${cat.title}</h3>
+            </div>
+            <span class="text-xs font-bold text-slate-200 tabular-nums" id="catTotal_${cat.id}">${fmt(catTotal)}</span>
+          </div>
+          <div class="space-y-3 pt-1" id="catBills_${cat.id}"></div>
+        `;
+
+        container.appendChild(card);
+        const billsBox = card.querySelector(`#catBills_${cat.id}`);
+
+        cat.bills.forEach(bill => {
+          const row = document.createElement('div');
+          row.className = 'space-y-1';
+          const maxVal = Math.max(bill.max || 100, Math.ceil((bill.val || 1) * 1.5));
+
+          row.innerHTML = `
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-300">${bill.name}</span>
+              <div class="flex items-center gap-1">
+                <span class="text-slate-400">£</span>
+                <input type="number" id="num_${bill.id}" value="${bill.val}" step="1" min="0" class="w-20 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-right font-bold text-white text-xs tabular-nums">
+              </div>
+            </div>
+            <input type="range" id="rng_${bill.id}" min="0" max="${maxVal}" step="1" value="${bill.val}" class="w-full">
+          `;
+
+          billsBox.appendChild(row);
+
+          const numEl = row.querySelector(`#num_${bill.id}`);
+          const rngEl = row.querySelector(`#rng_${bill.id}`);
+
+          rngEl.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value) || 0;
+            bill.val = val;
+            numEl.value = val;
+            saveState();
+            recalculate();
+          });
+
+          numEl.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value) || 0;
+            bill.val = val;
+            if (val > rngEl.max) rngEl.max = Math.ceil(val * 1.3);
+            rngEl.value = val;
+            saveState();
+            recalculate();
+          });
+        });
+      });
+    }
+
+    function recalculate() {
+      const inc = parseFloat(state.income) || 0;
+      const car = parseFloat(state.carSavings) || 0;
+
+      let totalBills = 0;
+      state.categories.forEach(cat => {
+        let catSum = 0;
+        cat.bills.forEach(b => catSum += (parseFloat(b.val) || 0));
+        totalBills += catSum;
+        const totalEl = document.getElementById(`catTotal_${cat.id}`);
+        if (totalEl) totalEl.innerText = fmt(catSum);
+      });
+
+      const afterCar = inc - car;
+      const discretionary = afterCar - totalBills;
+      const weekly = (discretionary * 12) / 52;
+      const daily = discretionary / 30.4167;
+
+      document.getElementById('inputIncome').value = state.income;
+      document.getElementById('inputCar').value = state.carSavings;
+      document.getElementById('sliderCar').value = state.carSavings;
+
+      document.getElementById('netAfterCar').innerText = fmt(afterCar);
+      document.getElementById('displayCarMonthly').innerText = fmt(car);
+      document.getElementById('displayCarAnnual').innerText = fmt(car * 12);
+      document.getElementById('displayTotalBills').innerText = fmt(totalBills);
+
+      const heroDisc = document.getElementById('heroDiscretionary');
+      const badge = document.getElementById('budgetStatusBadge');
+
+      heroDisc.innerText = fmt(discretionary);
+      document.getElementById('heroWeekly').innerText = fmt(weekly);
+      document.getElementById('heroDaily').innerText = fmt(daily);
+
+      if (inc === 0 && totalBills === 0) {
+        heroDisc.className = 'text-4xl font-extrabold text-slate-300 tabular-nums';
+        badge.innerText = 'Blank';
+        badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700';
+      } else if (discretionary >= 150) {
+        heroDisc.className = 'text-4xl font-extrabold text-emerald-400 tabular-nums';
+        badge.innerText = 'Comfortable';
+        badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+      } else if (discretionary >= 0) {
+        heroDisc.className = 'text-4xl font-extrabold text-blue-400 tabular-nums';
+        badge.innerText = 'Tight';
+        badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30';
+      } else {
+        heroDisc.className = 'text-4xl font-extrabold text-rose-500 tabular-nums';
+        badge.innerText = 'Deficit';
+        badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30';
+      }
+
+      if (inc > 0) {
+        const bPct = Math.max(0, Math.min(100, (totalBills / inc) * 100));
+        const cPct = Math.max(0, Math.min(100, (car / inc) * 100));
+        const pPct = Math.max(0, Math.min(100, 100 - bPct - cPct));
+
+        document.getElementById('barBills').style.width = bPct + '%';
+        document.getElementById('barCar').style.width = cPct + '%';
+        document.getElementById('barPocket').style.width = pPct + '%';
+      }
+    }
+
+    function onDataChanged() {
+      state.income = parseFloat(document.getElementById('inputIncome').value) || 0;
+      saveState();
+      recalculate();
+    }
+
+    function syncCarInput(v) {
+      const val = parseFloat(v) || 0;
+      state.carSavings = val;
+      document.getElementById('sliderCar').value = val;
+      saveState();
+      recalculate();
+    }
+
+    function syncCarSlider(v) {
+      const val = parseFloat(v) || 0;
+      state.carSavings = val;
+      document.getElementById('inputCar').value = val;
+      saveState();
+      recalculate();
+    }
+
+    function openPinModal() {
+      document.getElementById('pinCodeInput').value = '';
+      document.getElementById('pinErrorMsg').classList.add('hidden');
+      document.getElementById('pinModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('pinCodeInput').focus(), 150);
+    }
+
+    function closePinModal() {
+      document.getElementById('pinModal').classList.add('hidden');
+    }
+
+    function unlockBudgetWithPIN() {
+      const pin = document.getElementById('pinCodeInput').value.trim();
+      if (pin !== UNLOCK_PIN) {
+        document.getElementById('pinErrorMsg').classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const decoded = JSON.parse(atob(PRESET_DATA));
+        if (decoded && decoded.income) {
+          state = decoded;
+          saveState();
+          closePinModal();
+          renderCards();
+          recalculate();
+          showToast('✓ Budget unlocked & loaded!');
+        }
+      } catch (err) {
+        showToast('Error decoding data');
+      }
+    }
+
+    function copySummary() {
+      let bSum = 0;
+      let lines = [];
+      state.categories.forEach(c => {
+        c.bills.forEach(b => {
+          bSum += b.val;
+          lines.push(`- ${b.name}: ${fmt(b.val)}`);
+        });
+      });
+      const disc = (state.income - state.carSavings) - bSum;
+      const text = `Monthly Pay: ${fmt(state.income)}\nTotal Bills: ${fmt(bSum)}\n${lines.join('\n')}\nCar Savings: ${fmt(state.carSavings)}\nRemaining Pocket: ${fmt(disc)}`;
+      navigator.clipboard.writeText(text).then(() => showToast('✓ Summary copied!'));
+    }
+
+    let toastT;
+    function showToast(m) {
+      const t = document.getElementById('toast');
+      t.innerText = m;
+      t.classList.remove('opacity-0', 'pointer-events-none');
+      clearTimeout(toastT);
+      toastT = setTimeout(() => t.classList.add('opacity-0', 'pointer-events-none'), 2200);
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+
+    window.onload = function() {
+      loadSta
