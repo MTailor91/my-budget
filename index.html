@@ -9,8 +9,9 @@
 
   <!-- PWA Manifest & App Icons -->
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/svg+xml" href="icon.svg">
-  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -76,18 +77,10 @@
       transform: scale(1.15);
       background: #2563eb;
     }
-    .custom-scroll::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
-    }
-    .custom-scroll::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.3);
-      border-radius: 9999px;
-    }
   </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen antialiased selection:bg-blue-600 selection:text-white">
-  <div class="max-w-xl mx-auto px-4 py-6 md:py-8 space-y-6">
+  <div class="max-w-xl mx-auto px-4 py-6 md:py-8 space-y-5">
 
     <!-- App Header & Actions Bar -->
     <header class="flex items-center justify-between gap-3 pb-2 border-b border-slate-800">
@@ -97,24 +90,19 @@
           <h1 class="text-xl font-bold tracking-tight text-white">Budget Planner</h1>
         </div>
         <p class="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
-          <span>Real-time spending calculator</span>
+          <span>Personal Budget</span>
           <span class="inline-block w-1 h-1 rounded-full bg-slate-600"></span>
           <span id="storageBadge" class="text-emerald-400 text-[10px] font-semibold">🔒 Phone storage active</span>
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <!-- In-App Install Button (Appears if browser supports it) -->
-        <button id="installAppBtn" onclick="triggerNativeInstall()" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/30 transition active:scale-95">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-          <span>Install</span>
+        <button id="importBtn" onclick="openImportModal()" title="Load your private breakdown" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition active:scale-95">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+          <span>Load Data</span>
         </button>
         <button id="copySummaryBtn" onclick="copyBudgetSummary()" title="Copy text summary to clipboard" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition active:scale-95 border border-slate-700">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
           <span>Copy</span>
-        </button>
-        <button id="resetBtn" onclick="promptReset()" title="Reset to defaults or clear memory" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition active:scale-95 border border-slate-700">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-          <span>Reset</span>
         </button>
       </div>
     </header>
@@ -123,7 +111,7 @@
     <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-900/60 via-slate-800/80 to-slate-900 border border-blue-500/30 p-5 shadow-xl shadow-blue-950/40">
       <div class="flex items-center justify-between">
         <span class="text-xs font-bold tracking-wider uppercase text-blue-400">Spending Money Left</span>
-        <span id="spendingBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-semibold border border-blue-400/30">Neutral</span>
+        <span id="spendingBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-700 text-slate-300 font-semibold border border-slate-600">Neutral</span>
       </div>
 
       <div class="mt-2 flex items-baseline gap-2">
@@ -158,7 +146,7 @@
             <input type="number" id="incomeInput" value="0.00" step="10" min="0" oninput="handleIncomeChange(this.value)" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-2 py-1 text-base font-bold text-white focus:outline-none focus:border-blue-500 tabular-nums">
           </div>
         </div>
-        <p class="text-[11px] text-slate-400 mt-2">Available after Car Fund: <span id="netAvailableText" class="font-semibold text-slate-200">£0.00</span></p>
+        <p class="text-[11px] text-slate-400 mt-2">Available after Car: <span id="netAvailableText" class="font-semibold text-slate-200">£0.00</span></p>
       </div>
 
       <!-- Dedicated Car Savings Tile -->
@@ -203,17 +191,6 @@
           <span>Pocket (<span id="pctPocket">0%</span>)</span>
         </div>
       </div>
-    </div>
-
-    <!-- Quick Load Helper: Pre-fill My Budget on this phone -->
-    <div class="bg-slate-800/30 border border-dashed border-slate-700 rounded-2xl p-3.5 flex items-center justify-between gap-3">
-      <div class="text-xs">
-        <p class="font-semibold text-slate-200">First time opening on this device?</p>
-        <p class="text-slate-400 text-[11px]">Tap to load your pre-calculated budget into phone memory.</p>
-      </div>
-      <button onclick="loadUserPreset()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs whitespace-nowrap shadow-md shadow-blue-600/20 active:scale-95 transition">
-        Load Preset
-      </button>
     </div>
 
     <!-- Main Interactive Bills Section -->
@@ -270,11 +247,32 @@
     </div>
 
     <!-- Footer Note -->
-    <footer class="text-center text-xs text-slate-500 pt-4 pb-8 space-y-1">
+    <footer class="text-center text-xs text-slate-500 pt-2 pb-8 space-y-1">
       <p>Personal Budget & Savings Planner</p>
-      <p>All data stays 100% private in your phone's local storage.</p>
+      <p>GitHub repository contains zero personal finances.</p>
     </footer>
 
+  </div>
+
+  <!-- Modal: Import Private Breakdown -->
+  <div id="importModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white">Load Private Breakdown</h3>
+        <button onclick="closeImportModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+      </div>
+
+      <p class="text-xs text-slate-400">
+        Paste your private budget data below. It will be stored exclusively in your phone's memory and will <strong>never touch GitHub</strong>.
+      </p>
+
+      <textarea id="importPayload" rows="6" placeholder="Paste your private code snippet here..." class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 font-mono focus:outline-none focus:border-blue-500"></textarea>
+
+      <div class="flex gap-2 pt-1">
+        <button onclick="closeImportModal()" class="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition">Cancel</button>
+        <button onclick="applyImportPayload()" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-blue-600/30 transition">Apply to Phone</button>
+      </div>
+    </div>
   </div>
 
   <!-- Modal: Add Custom Bill -->
@@ -320,10 +318,10 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'pixel_budget_app_data_v1';
+    const STORAGE_KEY = 'pixel_budget_app_data_v3';
 
-    // Blank generic template for GitHub code (No personal numbers exposed)
-    const DUMMY_TEMPLATE = {
+    // Blank public template on GitHub (0.00 everywhere for total privacy)
+    const PUBLIC_BLANK_TEMPLATE = {
       income: 0.00,
       carSavings: 0.00,
       carCollapsed: false,
@@ -367,7 +365,7 @@
       ]
     };
 
-    let appState = JSON.parse(JSON.stringify(DUMMY_TEMPLATE));
+    let appState = JSON.parse(JSON.stringify(PUBLIC_BLANK_TEMPLATE));
 
     function saveToLocalStorage() {
       try {
@@ -375,4 +373,6 @@
         const badge = document.getElementById('storageBadge');
         if (badge) badge.innerText = '🔒 Saved locally on phone';
       } catch (e) {
-        console.warn('Storage not availab
+        console.warn('Storage not available', e);
+      }
+      
