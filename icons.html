@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Icon Downloader</title>
+  <style>
+    body { font-family: sans-serif; background: #0f172a; color: #fff; text-align: center; padding: 2rem 1rem; }
+    button { display: block; width: 100%; max-width: 320px; margin: 12px auto; padding: 14px; font-size: 16px; font-weight: bold; color: #fff; background: #2563eb; border: none; border-radius: 12px; cursor: pointer; }
+    .green { background: #059669; }
+    canvas { display: none; }
+  </style>
+</head>
+<body>
+  <h2>Tap Each Button to Download</h2>
+  <p style="color: #94a3b8; font-size: 14px;">These will save directly into your phone's Downloads folder.</p>
+
+  <canvas id="c192" width="192" height="192"></canvas>
+  <canvas id="c512" width="512" height="512"></canvas>
+
+  <button onclick="save(192)">⬇️ Download icon-192.png</button>
+  <button class="green" onclick="save(512)">⬇️ Download icon-512.png</button>
+
+  <script>
+    function draw(sz) {
+      const c = document.getElementById('c' + sz);
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#2563eb';
+      ctx.fillRect(0, 0, sz, sz);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold ' + Math.round(sz * 0.58) + 'px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('£', sz / 2, sz * 0.52);
+    }
+    function save(sz) {
+      const c = document.getElementById('c' + sz);
+      const a = document.createElement('a');
+      a.download = 'icon-' + sz + '.png';
+      a.href = c.toDataURL('image/png');
+      a.click();
+    }
+    draw(192);
+    draw(512);
+  </script>
+</body>
+</html>
