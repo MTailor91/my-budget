@@ -1,10 +1,18 @@
-```html
+html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Personal Budget & Spending Tracker</title>
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="Personal Budget & Real-time Spending Calculator">
+  <title>Budget Planner</title>
+
+  <!-- PWA Manifest & App Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon.svg">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Font: Inter -->
@@ -18,14 +26,6 @@
         extend: {
           fontFamily: {
             sans: ['Inter', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              50: '#eff6ff',
-              500: '#3b82f6',
-              600: '#2563eb',
-              700: '#1d4ed8',
-            }
           }
         }
       }
@@ -104,6 +104,11 @@
         </p>
       </div>
       <div class="flex items-center gap-2">
+        <!-- In-App Install Button (Appears if browser supports it) -->
+        <button id="installAppBtn" onclick="triggerNativeInstall()" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/30 transition active:scale-95">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          <span>Install</span>
+        </button>
         <button id="copySummaryBtn" onclick="copyBudgetSummary()" title="Copy text summary to clipboard" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition active:scale-95 border border-slate-700">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
           <span>Copy</span>
@@ -371,30 +376,4 @@
         const badge = document.getElementById('storageBadge');
         if (badge) badge.innerText = '🔒 Saved locally on phone';
       } catch (e) {
-        console.warn('Storage not available', e);
-      }
-    }
-
-    function loadFromLocalStorage() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          appState = JSON.parse(saved);
-          return true;
-        }
-      } catch (e) {
-        console.warn('Failed loading storage', e);
-      }
-      return false;
-    }
-
-    function formatCurrency(num) {
-      return '£' + Number(num).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    function renderCategoryCards() {
-      const container = document.getElementById('categoriesList');
-      container.innerHTML = '';
-
-      appState.categories.forEach(cat => {
-        const catTotal = cat.bills.reduce((sum, b) => sum + (parseFloat(b.val
+        console.warn('Storage not availab
