@@ -1,4 +1,3 @@
-html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,179 +5,538 @@ html
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0f172a">
   <title>Budget Planner</title>
-  <link rel="manifest" href="manifest.json?v=6">
+  <link rel="manifest" href="manifest.json?v=7">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-    input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
-    input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 9999px; background: rgba(148,163,184,0.25); }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; border: 2px solid #ffffff; margin-top: -7px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #090e17;
+      color: #f1f5f9;
+      min-height: 100vh;
+      padding: 16px;
+      max-width: 520px;
+      margin: 0 auto;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #1e293b;
+      margin-bottom: 16px;
+    }
+    .logo-badge {
+      width: 34px;
+      height: 34px;
+      background: #2563eb;
+      color: #ffffff;
+      font-weight: 800;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .btn {
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background: #2563eb; color: #ffffff; }
+    .btn-secondary { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+    
+    .card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .hero-card {
+      background: linear-gradient(135deg, #172554 0%, #0f172a 100%);
+      border: 1px solid #1e3a8a;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+    }
+    .hero-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #60a5fa;
+    }
+    .status-pill {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      background: rgba(30, 41, 59, 0.8);
+      color: #94a3b8;
+      border: 1px solid #334155;
+    }
+    .hero-amount {
+      font-size: 38px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 6px 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .sub-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .sub-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #94a3b8;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .sub-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #f8fafc;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .field-label {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .num-input {
+      background: #090e17;
+      border: 1px solid #334155;
+      color: #ffffff;
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      text-align: right;
+      width: 90px;
+      font-variant-numeric: tabular-nums;
+    }
+    .num-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+    .bill-row {
+      margin-bottom: 12px;
+    }
+    .bill-row:last-child { margin-bottom: 0; }
+    .bill-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .bill-name { font-size: 13px; color: #e2e8f0; font-weight: 500; }
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 9999px;
+      background: #1e293b;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #3b82f6;
+      border: 2px solid #ffffff;
+      cursor: pointer;
+    }
+    .category-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .category-title {
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .category-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 320px;
+      padding: 22px;
+      text-align: center;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7);
+    }
+    .pin-input {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      font-size: 24px;
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 6px;
+      margin: 14px 0;
+      outline: none;
+    }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 9999px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      z-index: 10000;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+    }
+    .toast.show { opacity: 1; }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-xl mx-auto space-y-4">
+<body>
 
-  <!-- Header -->
-  <header class="flex items-center justify-between border-b border-slate-800 pb-3">
-    <div class="flex items-center gap-2">
-      <span class="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow">£</span>
+  <header class="header-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div class="logo-badge">£</div>
       <div>
-        <div class="flex items-center gap-2">
-          <h1 class="text-base font-bold text-white leading-tight">Budget Planner</h1>
-          <span class="text-[9px] bg-blue-500/20 text-blue-400 font-bold px-1.5 py-0.5 rounded border border-blue-500/30">v2.5</span>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <h1 style="font-size: 15px; font-weight: 700; color: #fff;">Budget Planner</h1>
+          <span style="font-size: 10px; font-weight: 700; background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 5px; border-radius: 4px; border: 1px solid rgba(59,130,246,0.3);">v2.6</span>
         </div>
-        <p class="text-[10px] text-emerald-400 font-medium" id="storageStatus">🔒 Private Phone Storage</p>
+        <p style="font-size: 10px; color: #10b981; font-weight: 600;">🔒 Private Storage Active</p>
       </div>
     </div>
-    <div class="flex gap-2">
-      <button id="btnUnlock" onclick="handleUnlockClick()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow transition active:scale-95">
-        Unlock Budget
-      </button>
-      <button onclick="copySummary()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition active:scale-95">
-        Copy
-      </button>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-primary" onclick="openPinModal()">Unlock Budget</button>
+      <button class="btn btn-secondary" onclick="copySummary()">Copy</button>
     </div>
   </header>
 
-  <!-- Hero Card: Spending Remaining -->
-  <div class="rounded-2xl bg-gradient-to-br from-blue-950 via-slate-800 to-slate-900 border border-blue-500/30 p-5 shadow-lg space-y-3">
-    <div class="flex justify-between items-center">
-      <span class="text-xs uppercase font-bold tracking-wider text-blue-400">Spending Money Left</span>
-      <span id="budgetStatusBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">Neutral</span>
+  <div class="card hero-card">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <span class="hero-title">Spending Money Left</span>
+      <span id="badgeStatus" class="status-pill">Neutral</span>
     </div>
-    <div class="flex items-baseline gap-2">
-      <span id="heroDiscretionary" class="text-4xl font-extrabold text-white tabular-nums">£0.00</span>
-      <span class="text-xs text-slate-400">/ month</span>
-    </div>
-    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-700/60 text-xs">
-      <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-        <span class="text-slate-400 block text-[10px] uppercase font-semibold">Weekly Pocket</span>
-        <span id="heroWeekly" class="text-base font-bold text-slate-100 tabular-nums">£0.00</span>
+    <div class="hero-amount" id="dispPocketMonthly">£0.00</div>
+    <div class="grid-2">
+      <div class="sub-box">
+        <span class="sub-label">Weekly Pocket</span>
+        <span class="sub-value" id="dispPocketWeekly">£0.00</span>
       </div>
-      <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-        <span class="text-slate-400 block text-[10px] uppercase font-semibold">Daily Allowance</span>
-        <span id="heroDaily" class="text-base font-bold text-slate-100 tabular-nums">£0.00</span>
+      <div class="sub-box">
+        <span class="sub-label">Daily Allowance</span>
+        <span class="sub-value" id="dispPocketDaily">£0.00</span>
       </div>
     </div>
   </div>
 
-  <!-- Income & Car Fund Tiles -->
-  <div class="grid grid-cols-2 gap-3">
-    <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-3.5 space-y-1">
-      <div class="flex justify-between text-xs text-slate-400 font-medium">
+  <div class="grid-2" style="margin-bottom: 14px;">
+    <div class="card" style="margin-bottom: 0;">
+      <div class="field-label">
         <span>Take-Home Pay</span>
-        <span class="text-slate-300">Net</span>
+        <span style="color: #64748b;">Net</span>
       </div>
-      <div class="flex items-center gap-1">
-        <span class="text-sm text-slate-400">£</span>
-        <input type="number" id="inputIncome" value="0.00" step="10" min="0" oninput="onIncomeChange(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-sm font-bold text-white focus:outline-none focus:border-blue-500 tabular-nums">
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <span style="color: #64748b; font-weight: 700;">£</span>
+        <input type="number" id="inpIncome" class="num-input" style="width: 100%;" value="0.00" step="10" min="0" oninput="onDirectChange('income', this.value)">
       </div>
-      <p class="text-[10px] text-slate-400 pt-1">After Car: <strong id="netAfterCar" class="text-slate-200">£0.00</strong></p>
+      <p style="font-size: 10px; color: #64748b; margin-top: 6px;">After Car: <strong id="dispAfterCar" style="color: #cbd5e1;">£0.00</strong></p>
     </div>
 
-    <div class="bg-slate-800/60 border border-emerald-500/30 rounded-2xl p-3.5 space-y-1">
-      <div class="flex justify-between text-xs text-emerald-400 font-semibold">
-        <span>Car Savings Fund</span>
-        <span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-1 rounded">Auto</span>
+    <div class="card" style="margin-bottom: 0; border-color: rgba(16, 185, 129, 0.3);">
+      <div class="field-label">
+        <span style="color: #34d399;">Car Savings Fund</span>
+        <span style="font-size: 9px; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 1px 4px; border-radius: 4px;">Auto</span>
       </div>
-      <div class="flex items-baseline gap-1">
-        <span id="displayCarMonthly" class="text-lg font-bold text-emerald-400 tabular-nums">£0.00</span>
-        <span class="text-[10px] text-slate-400">/ mo</span>
-      </div>
-      <p class="text-[10px] text-slate-400 pt-1">Annual: <strong id="displayCarAnnual" class="text-emerald-300">£0.00</strong></p>
+      <div style="font-size: 18px; font-weight: 800; color: #34d399; font-variant-numeric: tabular-nums;" id="dispCarFund">£0.00</div>
+      <p style="font-size: 10px; color: #64748b; margin-top: 6px;">Annual: <strong id="dispCarAnnual" style="color: #6ee7b7;">£0.00</strong></p>
     </div>
   </div>
 
-  <!-- Dedicated Car Savings Slider -->
-  <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-4 space-y-2">
-    <div class="flex justify-between items-center text-xs">
-      <span class="font-bold text-emerald-400">Dedicated Car Fund Transfer</span>
-      <div class="flex items-center gap-1">
-        <span class="text-slate-400">£</span>
-        <input type="number" id="inputCar" value="0.00" step="5" min="0" oninput="onCarChange(this.value)" class="w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-right font-bold text-emerald-400 text-xs tabular-nums">
+  <div class="card">
+    <div class="bill-meta">
+      <span class="bill-name" style="color: #34d399; font-weight: 700;">Dedicated Car Fund Transfer</span>
+      <div style="display: flex; align-items: center; gap: 3px;">
+        <span style="color: #64748b; font-size: 12px;">£</span>
+        <input type="number" id="inpCar" class="num-input" value="0.00" step="5" min="0" oninput="onCarChange(this.value)">
       </div>
     </div>
-    <input type="range" id="sliderCar" min="0" max="1000" step="5" value="0" oninput="onCarChange(this.value)" class="w-full accent-emerald-500">
+    <input type="range" id="rngCar" min="0" max="1000" step="5" value="0" oninput="onCarChange(this.value)">
   </div>
 
-  <!-- Bills Section -->
-  <div class="space-y-3">
-    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Living Bills & Variable Transfers</h2>
-    <div id="categoriesContainer" class="space-y-3"></div>
+  <div class="card">
+    <div class="category-header">
+      <div class="category-title">
+        <span class="category-dot" style="background: #3b82f6;"></span>
+        <span>Housing & Utilities</span>
+      </div>
+      <span style="font-size: 12px; font-weight: 700; color: #94a3b8;" id="catTotal_housing">£0.00</span>
+    </div>
+    
+    <div class="bill-row">
+      <div class="bill-meta">
+        <span class="bill-name">Mortgage</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inp_mortgage" class="num-input" value="0.00" oninput="onBillChange('mortgage', this.value)">
+        </div>
+      </div>
+      <input type="range" id="rng_mortgage" min="0" max="1500" step="10" value="0" oninput="onBillChange('mortgage', this.value)">
+    </div>
+
+    <div class="bill-row">
+      <div class="bill-meta">
+        <span class="bill-name">Internet</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inp_internet" class="num-input" value="0.00" oninput="onBillChange('internet', this.value)">
+        </div>
+      </div>
+      <input type="range" id="rng_internet" min="0" max="120" step="1" value="0" oninput="onBillChange('internet', this.value)">
+    </div>
+
+    <div class="bill-row">
+      <div class="bill-meta">
+        <span class="bill-name">Phone</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inp_phone" class="num-input" value="0.00" oninput="onBillChange('phone', this.value)">
+        </div>
+      </div>
+      <input type="range" id="rng_phone" min="0" max="150" step="5" value="0" oninput="onBillChange('phone', this.value)">
+    </div>
   </div>
 
-  <!-- Direct Modal with Inline Styles (Guaranteed to show) -->
-  <div id="pinModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(4px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
-    <div style="background:#0f172a; border:1px solid #334155; border-radius:18px; width:100%; max-width:320px; padding:20px; text-align:center;">
-      <h3 style="font-size:16px; font-weight:bold; color:#fff; margin-bottom:6px;">Unlock Preset Budget</h3>
-      <p style="font-size:12px; color:#94a3b8; margin-bottom:16px;">Enter your 4-digit PIN to load your budget into this phone.</p>
+  <div class="card">
+    <div class="category-header">
+      <div class="category-title">
+        <span class="category-dot" style="background: #ef4444;"></span>
+        <span>Debt & Variable Transfers</span>
+      </div>
+      <span style="font-size: 12px; font-weight: 700; color: #94a3b8;" id="catTotal_debts">£0.00</span>
+    </div>
+
+    <div class="bill-row">
+      <div class="bill-meta">
+        <span class="bill-name">Credit Card</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inp_credit_card" class="num-input" value="0.00" oninput="onBillChange('credit_card', this.value)">
+        </div>
+      </div>
+      <input type="range" id="rng_credit_card" min="0" max="500" step="10" value="0" oninput="onBillChange('credit_card', this.value)">
+    </div>
+
+    <div class="bill-row">
+      <div class="bill-meta">
+        <span class="bill-name">Car Insurance</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inp_car_insurance" class="num-input" value="0.00" oninput="onBillChange('car_insurance', this.value)">
+        </div>
+      </div>
+      <input type="range" id="rng_car_insurance" min="0" max="150" step="5" value="0" oninput="onBillChange('car_insurance', this.value)">
+    </div>
+
+    <div class="bill-row">
+      <div class="bill-meta">
+        <span class="bill-name">Partner Transfer</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inp_partner_transfer" class="num-input" value="0.00" oninput="onBillChange('partner_transfer', this.value)">
+        </div>
+      </div>
+      <input type="range" id="rng_partner_transfer" min="0" max="400" step="10" value="0" oninput="onBillChange('partner_transfer', this.value)">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="category-header">
+      <div class="category-title">
+        <span class="category-dot" style="background: #10b981;"></span>
+        <span>Lifestyle & Subscriptions</span>
+      </div>
+      <span style="font-size: 12px; font-weight: 700; color: #94a3b8;" id="catTotal_lifestyle">£0.00</span>
+    </div>
+
+    <div class="bill-row">
+      <div class="bill-meta">
+        <span class="bill-name">Haircut</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inp_haircut" class="num-input" value="0.00" oninput="onBillChange('haircut', this.value)">
+        </div>
+      </div>
+      <input type="range" id="rng_haircut" min="0" max="150" step="5" value="0" oninput="onBillChange('haircut', this.value)">
+    </div>
+
+    <div class="bill-row">
+      <div class="bill-meta">
+        <span class="bill-name">Vape</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inp_vape" class="num-input" value="0.00" oninput="onBillChange('vape', this.value)">
+        </div>
+      </div>
+      <input type="range" id="rng_vape" min="0" max="150" step="5" value="0" oninput="onBillChange('vape', this.value)">
+    </div>
+
+    <div class="bill-row">
+      <div class="bill-meta">
+        <span class="bill-name">Google AI Pro</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inp_google_ai" class="num-input" value="0.00" oninput="onBillChange('google_ai', this.value)">
+        </div>
+      </div>
+      <input type="range" id="rng_google_ai" min="0" max="50" step="5" value="0" oninput="onBillChange('google_ai', this.value)">
+    </div>
+
+    <div class="bill-row">
+      <div class="bill-meta">
+        <span class="bill-name">Spotify</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inp_spotify" class="num-input" value="0.00" step="0.01" oninput="onBillChange('spotify', this.value)">
+        </div>
+      </div>
+      <input type="range" id="rng_spotify" min="0" max="30" step="0.5" value="0" oninput="onBillChange('spotify', this.value)">
+    </div>
+
+    <div class="bill-row">
+      <div class="bill-meta">
+        <span class="bill-name">Amazon Prime</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inp_prime" class="num-input" value="0.00" oninput="onBillChange('prime', this.value)">
+        </div>
+      </div>
+      <input type="range" id="rng_prime" min="0" max="30" step="1" value="0" oninput="onBillChange('prime', this.value)">
+    </div>
+
+    <div class="bill-row">
+      <div class="bill-meta">
+        <span class="bill-name">Microsoft 365</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inp_m365" class="num-input" value="0.00" oninput="onBillChange('m365', this.value)">
+        </div>
+      </div>
+      <input type="range" id="rng_m365" min="0" max="20" step="1" value="0" oninput="onBillChange('m365', this.value)">
+    </div>
+  </div>
+
+  <div id="pinModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px;">Unlock Budget</h3>
+      <p style="font-size: 12px; color: #94a3b8;">Enter PIN to populate your pre-calculated budget.</p>
       
-      <input type="password" id="pinCodeInput" maxlength="6" inputmode="numeric" placeholder="••••" style="width:100%; background:#1e293b; border:1px solid #475569; border-radius:12px; padding:10px; text-align:center; font-size:20px; color:#fff; font-weight:bold; letter-spacing:4px; margin-bottom:12px; outline:none;">
+      <input type="password" id="pinInput" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
+      <p id="pinError" style="display:none; color: #f43f5e; font-size: 11px; margin-bottom: 12px; font-weight: 600;">Incorrect PIN. Enter 1234.</p>
       
-      <p id="pinErrorMsg" style="display:none; color:#f43f5e; font-size:12px; margin-bottom:12px;">Incorrect PIN. Try 1234.</p>
-      
-      <div style="display:flex; gap:8px;">
-        <button onclick="closePinModal()" style="flex:1; padding:10px; border-radius:12px; background:#1e293b; color:#cbd5e1; font-size:12px; font-weight:600; border:none; cursor:pointer;">Cancel</button>
-        <button onclick="unlockBudgetWithPIN()" style="flex:1; padding:10px; border-radius:12px; background:#2563eb; color:#fff; font-size:12px; font-weight:600; border:none; cursor:pointer;">Unlock</button>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary" style="flex: 1;" onclick="closePinModal()">Cancel</button>
+        <button class="btn btn-primary" style="flex: 1;" onclick="submitPin()">Unlock</button>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notice -->
-  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 text-white border border-slate-700 text-xs font-semibold rounded-full shadow-2xl transition opacity-0 pointer-events-none z-50">
-    Saved
-  </div>
+  <div id="toast" class="toast">Notice</div>
 
   <script>
-    // New clean storage key to discard any previous corrupt state
-    const STORAGE_KEY = 'budget_planner_v6_clean';
-    const UNLOCK_PIN = '1234';
+    const STORE_KEY = 'bp_budget_data_v26';
+    const PIN_KEY = '1234';
 
-    // Scrambled real figures
-    const ENCODED_BUDGET = "eyJpbmNvbWUiOjIyMzcsImNhclNhdmluZ3MiOjYxNi41MywiY2F0ZWdvcmllcyI6W3siaWQiOiJob3VzaW5nIiwidGl0bGUiOiJIb3VzaW5nICYgVXRpbGl0aWVzIiwiY29sb3IiOiIjM2I4MmY2IiwiYmlsbHMiOlt7ImlkIjoibW9ydGdhZ2UiLCJuYW1lIjoiTW9ydGdhZ2UiLCJ2YWwiOjk0MCwibWF4IjoxNTAwfSx7ImlkIjoiaW50ZXJuZXQiLCJuYW1lIjoiSW50ZXJuZXQiLCJ2YWwiOjQ0LCJtYXgiOjEyMH0seyJpZCI6InBob25lIiwibmFtZSI6IlBob25lIiwidmFsIjo2MCwibWF4IjoxNTB9XX0seyJpZCI6ImRlYnRzIiwidGl0bGUiOiJEZWJ0ICYgVmFyaWFibGUgVHJhbnNmZXJzIiwiY29sb3IiOiIjZWY0NDQ0IiwiYmlsbHMiOlt7ImlkIjoiY3JlZGl0X2NhcmQiLCJuYW1lIjoiQ3JlZGl0IENhcmQiLCJ2YWwiOjE5MCwibWF4Ijo1MDB9LHsiaWQiOiJjYXJfaW5zdXJhbmNlIiwibmFtZSI6IkNhciBJbnN1cmFuY2UiLCJ2YWwiOjE1LCJtYXgiOjE1MH0seyJpZCI6InBhcnRuZXJfdHJhbnNmZXIiLCJuYW1lIjoiUGFydG5lciBUcmFuc2ZlciIsInZhbCI6MCwibWF4Ijo0MDB9XX0seyJpZCI6ImxpZmVzdHlsZSIsInRpdGxlIjoiTGlmZXN0eWxlICYgU3Vic2NyaXB0aW9ucyIsImNvbG9yIjoiIzEwYjk4MSIsImJpbGxzIjpbeyJpZCI6ImhhaXJjdXQiLCJuYW1lIjoiSGFpcmN1dCIsInZhbCI6NzAsIm1heCI6MTUwfSx7ImlkIjoidmFwZSIsIm5hbWUiOiJWYXBlIiwidmFsIjo1MCwibWF4IjoxNTB9LHsiaWQiOiJnb29nbGVfYWkiLCJuYW1lIjoiR29vZ2xlIEFJIFBybyIsInZhbCI6MjAsIm1heCI6NTB9LHsiaWQiOiJzcG90aWZ5IiwibmFtZSI6IlNwb3RpZnkiLCJ2YWwiOjEyLjk5LCJtYXgiOjMwfSx7ImlkIjoicHJpbWUiLCJuYW1lIjoiQW1hem9uIFByaW1lIiwidmFsIjoxMCwibWF4IjozMH0seyJpZCI6Im0zNjUiLCJuYW1lIjoiTWljcm9zb2Z0IDM2NSIsInZhbCI6NSwibWF4IjoyMH1dfV19";
-
-    const DEFAULT_TEMPLATE = {
-      income: 0.00,
-      carSavings: 0.00,
-      categories: [
-        {
-          id: 'housing',
-          title: 'Housing & Utilities',
-          color: '#3b82f6',
-          bills: [
-            { id: 'mortgage', name: 'Mortgage', val: 0.00, max: 1500 },
-            { id: 'internet', name: 'Internet', val: 0.00, max: 120 },
-            { id: 'phone', name: 'Phone', val: 0.00, max: 150 }
-          ]
-        },
-        {
-          id: 'debts',
-          title: 'Debt & Variable Transfers',
-          color: '#ef4444',
-          bills: [
-            { id: 'credit_card', name: 'Credit Card', val: 0.00, max: 500 },
-            { id: 'car_insurance', name: 'Car Insurance', val: 0.00, max: 150 },
-            { id: 'partner_transfer', name: 'Partner Transfer', val: 0.00, max: 400 }
-          ]
-        },
-        {
-          id: 'lifestyle',
-          title: 'Lifestyle & Subscriptions',
-          color: '#10b981',
-          bills: [
-            { id: 'haircut', name: 'Haircut', val: 0.00, max: 150 },
-            { id: 'vape', name: 'Vape', val: 0.00, max: 150 },
-            { id: 'google_ai', name: 'Google AI Pro', val: 0.00, max: 50 },
-            { id: 'spotify', name: 'Spotify', val: 0.00, max: 30 },
-            { id: 'prime', name: 'Amazon Prime', val: 0.00, max: 30 },
-            { id: 'm365', name: 'Microsoft 365', val: 0.00, max: 20 }
-          ]
-        }
-      ]
+    const INITIAL_BUDGET = {
+      income: 2237.00,
+      carSavings: 616.53,
+      bills: {
+        mortgage: 940.00,
+        internet: 44.00,
+        phone: 60.00,
+        credit_card: 190.00,
+        car_insurance: 15.00,
+        partner_transfer: 0.00,
+        haircut: 70.00,
+        vape: 50.00,
+        google_ai: 20.00,
+        spotify: 12.99,
+        prime: 10.00,
+        m365: 5.00
+      }
     };
 
-    let state = JSON.parse(JSON.stringify(DEFAULT_TEMPLATE));
+    let state = {
+      income: 0.00,
+      carSavings: 0.00,
+      bills: {
+        mortgage: 0.00,
+        internet: 0.00,
+        phone: 0.00,
+        credit_card: 0.00,
+        car_insurance: 0.00,
+        partner_transfer: 0.00,
+        haircut: 0.00,
+        vape: 0.00,
+        google_ai: 0.00,
+        spotify: 0.00,
+        prime: 0.00,
+        m365: 0.00
+      }
+    };
 
     function fmt(n) {
       return '£' + Number(n || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -186,16 +544,16 @@ html
 
     function saveState() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        localStorage.setItem(STORE_KEY, JSON.stringify(state));
       } catch (e) {}
     }
 
     function loadState() {
       try {
-        const d = localStorage.getItem(STORAGE_KEY);
-        if (d) {
-          const parsed = JSON.parse(d);
-          if (parsed && Array.isArray(parsed.categories)) {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed.income === 'number' && parsed.bills) {
             state = parsed;
             return true;
           }
@@ -204,216 +562,160 @@ html
       return false;
     }
 
-    function renderCards() {
-      const container = document.getElementById('categoriesContainer');
-      if (!container) return;
-      container.innerHTML = '';
+    function syncUI() {
+      document.getElementById('inpIncome').value = state.income || 0;
+      document.getElementById('inpCar').value = state.carSavings || 0;
+      document.getElementById('rngCar').value = state.carSavings || 0;
 
-      state.categories.forEach(cat => {
-        let catTotal = (cat.bills || []).reduce((s, b) => s + (parseFloat(b.val) || 0), 0);
-
-        const card = document.createElement('div');
-        card.className = 'bg-slate-800/40 border border-slate-800 rounded-2xl p-4 space-y-3';
-        
-        card.innerHTML = `
-          <div class="flex justify-between items-center">
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${cat.color}"></span>
-              <h3 class="text-sm font-bold text-white">${cat.title}</h3>
-            </div>
-            <span class="text-xs font-bold text-slate-200 tabular-nums" id="catTotal_${cat.id}">${fmt(catTotal)}</span>
-          </div>
-          <div class="space-y-3 pt-1" id="catBills_${cat.id}"></div>
-        `;
-
-        container.appendChild(card);
-        const billsBox = card.querySelector(`#catBills_${cat.id}`);
-
-        (cat.bills || []).forEach(bill => {
-          const row = document.createElement('div');
-          row.className = 'space-y-1';
-          const maxVal = Math.max(bill.max || 100, Math.ceil((bill.val || 1) * 1.5));
-
-          row.innerHTML = `
-            <div class="flex justify-between text-xs">
-              <span class="text-slate-300">${bill.name}</span>
-              <div class="flex items-center gap-1">
-                <span class="text-slate-400">£</span>
-                <input type="number" id="num_${bill.id}" value="${bill.val}" step="1" min="0" class="w-20 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-right font-bold text-white text-xs tabular-nums focus:outline-none focus:border-blue-500">
-              </div>
-            </div>
-            <input type="range" id="rng_${bill.id}" min="0" max="${maxVal}" step="1" value="${bill.val}" class="w-full">
-          `;
-
-          billsBox.appendChild(row);
-
-          const numEl = row.querySelector(`#num_${bill.id}`);
-          const rngEl = row.querySelector(`#rng_${bill.id}`);
-
-          rngEl.addEventListener('input', (e) => {
-            const val = parseFloat(e.target.value) || 0;
-            bill.val = val;
-            numEl.value = val;
-            saveState();
-            recalculate();
-          });
-
-          numEl.addEventListener('input', (e) => {
-            const val = parseFloat(e.target.value) || 0;
-            bill.val = val;
-            if (val > parseFloat(rngEl.max)) rngEl.max = Math.ceil(val * 1.3);
-            rngEl.value = val;
-            saveState();
-            recalculate();
-          });
-        });
-      });
+      for (const [key, val] of Object.entries(state.bills)) {
+        const inp = document.getElementById(`inp_${key}`);
+        const rng = document.getElementById(`rng_${key}`);
+        if (inp) inp.value = val;
+        if (rng) {
+          if (val > parseFloat(rng.max)) rng.max = Math.ceil(val * 1.3);
+          rng.value = val;
+        }
+      }
+      recalculate();
     }
 
     function recalculate() {
       const inc = parseFloat(state.income) || 0;
       const car = parseFloat(state.carSavings) || 0;
 
-      let totalBills = 0;
-      (state.categories || []).forEach(cat => {
-        let catSum = 0;
-        (cat.bills || []).forEach(b => catSum += (parseFloat(b.val) || 0));
-        totalBills += catSum;
-        const totalEl = document.getElementById(`catTotal_${cat.id}`);
-        if (totalEl) totalEl.innerText = fmt(catSum);
-      });
+      const housingSum = (parseFloat(state.bills.mortgage) || 0) + (parseFloat(state.bills.internet) || 0) + (parseFloat(state.bills.phone) || 0);
+      const debtsSum = (parseFloat(state.bills.credit_card) || 0) + (parseFloat(state.bills.car_insurance) || 0) + (parseFloat(state.bills.partner_transfer) || 0);
+      const lifestyleSum = (parseFloat(state.bills.haircut) || 0) + (parseFloat(state.bills.vape) || 0) + (parseFloat(state.bills.google_ai) || 0) + (parseFloat(state.bills.spotify) || 0) + (parseFloat(state.bills.prime) || 0) + (parseFloat(state.bills.m365) || 0);
 
+      document.getElementById('catTotal_housing').innerText = fmt(housingSum);
+      document.getElementById('catTotal_debts').innerText = fmt(debtsSum);
+      document.getElementById('catTotal_lifestyle').innerText = fmt(lifestyleSum);
+
+      const totalBills = housingSum + debtsSum + lifestyleSum;
       const afterCar = inc - car;
-      const discretionary = afterCar - totalBills;
-      const weekly = (discretionary * 12) / 52;
-      const daily = discretionary / 30.4167;
+      const pocketMonthly = afterCar - totalBills;
+      const pocketWeekly = (pocketMonthly * 12) / 52;
+      const pocketDaily = pocketMonthly / 30.4167;
 
-      const incInput = document.getElementById('inputIncome');
-      const carInput = document.getElementById('inputCar');
-      const carSlider = document.getElementById('sliderCar');
+      document.getElementById('dispAfterCar').innerText = fmt(afterCar);
+      document.getElementById('dispCarFund').innerText = fmt(car);
+      document.getElementById('dispCarAnnual').innerText = fmt(car * 12);
 
-      if (incInput) incInput.value = state.income;
-      if (carInput) carInput.value = state.carSavings;
-      if (carSlider) carSlider.value = state.carSavings;
+      const elMonthly = document.getElementById('dispPocketMonthly');
+      const elWeekly = document.getElementById('dispPocketWeekly');
+      const elDaily = document.getElementById('dispPocketDaily');
+      const badge = document.getElementById('badgeStatus');
 
-      const elNetAfterCar = document.getElementById('netAfterCar');
-      const elDisplayCar = document.getElementById('displayCarMonthly');
-      const elDisplayCarAnn = document.getElementById('displayCarAnnual');
+      elMonthly.innerText = fmt(pocketMonthly);
+      elWeekly.innerText = fmt(pocketWeekly);
+      elDaily.innerText = fmt(pocketDaily);
 
-      if (elNetAfterCar) elNetAfterCar.innerText = fmt(afterCar);
-      if (elDisplayCar) elDisplayCar.innerText = fmt(car);
-      if (elDisplayCarAnn) elDisplayCarAnn.innerText = fmt(car * 12);
-
-      const heroDisc = document.getElementById('heroDiscretionary');
-      const heroWeek = document.getElementById('heroWeekly');
-      const heroDay = document.getElementById('heroDaily');
-      const badge = document.getElementById('budgetStatusBadge');
-
-      if (heroDisc) heroDisc.innerText = fmt(discretionary);
-      if (heroWeek) heroWeek.innerText = fmt(weekly);
-      if (heroDay) heroDay.innerText = fmt(daily);
-
-      if (badge && heroDisc) {
-        if (inc === 0 && totalBills === 0) {
-          heroDisc.className = 'text-4xl font-extrabold text-slate-300 tabular-nums';
-          badge.innerText = 'Neutral';
-          badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700';
-        } else if (discretionary >= 150) {
-          heroDisc.className = 'text-4xl font-extrabold text-emerald-400 tabular-nums';
-          badge.innerText = 'Comfortable';
-          badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-        } else if (discretionary >= 0) {
-          heroDisc.className = 'text-4xl font-extrabold text-blue-400 tabular-nums';
-          badge.innerText = 'Tight';
-          badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30';
-        } else {
-          heroDisc.className = 'text-4xl font-extrabold text-rose-500 tabular-nums';
-          badge.innerText = 'Deficit';
-          badge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30';
-        }
+      if (inc === 0 && totalBills === 0) {
+        elMonthly.style.color = '#ffffff';
+        badge.innerText = 'Neutral';
+        badge.style.color = '#94a3b8';
+      } else if (pocketMonthly >= 150) {
+        elMonthly.style.color = '#34d399';
+        badge.innerText = 'Comfortable';
+        badge.style.color = '#34d399';
+      } else if (pocketMonthly >= 0) {
+        elMonthly.style.color = '#60a5fa';
+        badge.innerText = 'Tight';
+        badge.style.color = '#60a5fa';
+      } else {
+        elMonthly.style.color = '#f43f5e';
+        badge.innerText = 'Deficit';
+        badge.style.color = '#f43f5e';
       }
     }
 
-    function onIncomeChange(v) {
-      state.income = parseFloat(v) || 0;
+    function onDirectChange(field, val) {
+      state[field] = parseFloat(val) || 0;
       saveState();
       recalculate();
     }
 
-    function onCarChange(v) {
-      const val = parseFloat(v) || 0;
-      state.carSavings = val;
-      const input = document.getElementById('inputCar');
-      const slider = document.getElementById('sliderCar');
-      if (input) input.value = val;
-      if (slider) slider.value = val;
+    function onCarChange(val) {
+      const num = parseFloat(val) || 0;
+      state.carSavings = num;
+      document.getElementById('inpCar').value = num;
+      document.getElementById('rngCar').value = num;
       saveState();
       recalculate();
     }
 
-    function handleUnlockClick() {
-      // Primary: Show inline modal
+    function onBillChange(key, val) {
+      const num = parseFloat(val) || 0;
+      state.bills[key] = num;
+      const inp = document.getElementById(`inp_${key}`);
+      const rng = document.getElementById(`rng_${key}`);
+      if (inp) inp.value = num;
+      if (rng) {
+        if (num > parseFloat(rng.max)) rng.max = Math.ceil(num * 1.3);
+        rng.value = num;
+      }
+      saveState();
+      recalculate();
+    }
+
+    function openPinModal() {
       const modal = document.getElementById('pinModal');
-      if (modal) {
-        modal.style.display = 'flex';
-        const inp = document.getElementById('pinCodeInput');
-        if (inp) {
-          inp.value = '';
-          setTimeout(() => inp.focus(), 100);
-        }
-        return;
-      }
-      // Fail-safe browser prompt
-      const pin = prompt('Enter 4-digit PIN:');
-      if (pin === UNLOCK_PIN) {
-        applyPreset();
-      } else if (pin !== null) {
-        alert('Incorrect PIN');
-      }
+      modal.style.display = 'flex';
+      const inp = document.getElementById('pinInput');
+      inp.value = '';
+      document.getElementById('pinError').style.display = 'none';
+      setTimeout(() => inp.focus(), 80);
     }
 
     function closePinModal() {
-      const modal = document.getElementById('pinModal');
-      if (modal) modal.style.display = 'none';
-      const err = document.getElementById('pinErrorMsg');
-      if (err) err.style.display = 'none';
+      document.getElementById('pinModal').style.display = 'none';
     }
 
-    function unlockBudgetWithPIN() {
-      const pinEl = document.getElementById('pinCodeInput');
-      const pin = pinEl ? pinEl.value.trim() : '';
-      if (pin !== UNLOCK_PIN) {
-        const err = document.getElementById('pinErrorMsg');
-        if (err) err.style.display = 'block';
-        return;
-      }
-      closePinModal();
-      applyPreset();
-    }
-
-    function applyPreset() {
-      try {
-        const decoded = JSON.parse(atob(ENCODED_BUDGET));
-        if (decoded && decoded.income) {
-          state = decoded;
-          saveState();
-          renderCards();
-          recalculate();
-          showToast('✓ Budget unlocked & loaded!');
-        }
-      } catch (e) {
-        alert('Error loading preset');
+    function submitPin() {
+      const val = document.getElementById('pinInput').value.trim();
+      if (val === PIN_KEY) {
+        state = JSON.parse(JSON.stringify(INITIAL_BUDGET));
+        saveState();
+        syncUI();
+        closePinModal();
+        showToast('✓ Budget unlocked & loaded!');
+      } else {
+        document.getElementById('pinError').style.display = 'block';
       }
     }
 
     function copySummary() {
-      let bSum = 0;
-      let lines = [];
-      (state.categories || []).forEach(c => {
-        (c.bills || []).forEach(b => {
-          bSum += (parseFloat(b.val) || 0);
-          lines.push(`- ${b.name}: ${fmt(b.val)}`);
-        });
-      });
-      const disc = (state.income - state.carSavings) - bSum;
-      const text = `Take-Home Pay: ${fmt(state.income)}\nTotal Bills: $
+      let totalBills = 0;
+      let billLines = [];
+      for (const [k, v] of Object.entries(state.bills)) {
+        totalBills += (parseFloat(v) || 0);
+        billLines.push(`• ${k.replace('_', ' ')}: ${fmt(v)}`);
+      }
+      const disc = (state.income - state.carSavings) - totalBills;
+      const summary = `Take-Home Pay: ${fmt(state.income)}\nCar Savings: ${fmt(state.carSavings)}\nTotal Bills: ${fmt(totalBills)}\n${billLines.join('\n')}\n\nRemaining Pocket Money: ${fmt(disc)}`;
+      
+      const el = document.createElement('textarea');
+      el.value = summary;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      showToast('✓ Summary copied to clipboard!');
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    window.onload = function() {
+      loadState();
+      syncUI();
+    };
+  </script>
+</body>
+</html>
