@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0f172a">
   <title>Budget Planner</title>
-  <link rel="manifest" href="manifest.json?v=7">
+  <link rel="manifest" href="manifest.json?v=8">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
   <style>
@@ -19,6 +19,7 @@
       max-width: 520px;
       margin: 0 auto;
       -webkit-tap-highlight-color: transparent;
+      padding-bottom: 40px;
     }
     .header-bar {
       display: flex;
@@ -41,17 +42,23 @@
       font-size: 18px;
     }
     .btn {
-      padding: 8px 14px;
+      padding: 8px 12px;
       border-radius: 10px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       border: none;
-      transition: transform 0.1s, opacity 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: transform 0.1s, opacity 0.2s, background-color 0.2s;
     }
     .btn:active { transform: scale(0.96); }
     .btn-primary { background: #2563eb; color: #ffffff; }
     .btn-secondary { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+    .btn-emerald { background: #059669; color: #ffffff; }
+    .btn-sm { padding: 4px 8px; font-size: 11px; border-radius: 7px; }
     
     .card {
       background: #111827;
@@ -131,7 +138,7 @@
       font-weight: 700;
       font-size: 13px;
       text-align: right;
-      width: 90px;
+      width: 95px;
       font-variant-numeric: tabular-nums;
     }
     .num-input:focus {
@@ -140,15 +147,46 @@
     }
     .bill-row {
       margin-bottom: 12px;
+      background: rgba(15, 23, 42, 0.4);
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid #1e293b;
     }
     .bill-row:last-child { margin-bottom: 0; }
     .bill-meta {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
     }
-    .bill-name { font-size: 13px; color: #e2e8f0; font-weight: 500; }
+    .bill-name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      overflow: hidden;
+    }
+    .bill-name {
+      font-size: 13px;
+      color: #e2e8f0;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .del-btn {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      padding: 2px 4px;
+      font-size: 14px;
+      line-height: 1;
+      border-radius: 4px;
+      transition: color 0.15s, background-color 0.15s;
+    }
+    .del-btn:hover { color: #f43f5e; background: rgba(244, 63, 94, 0.1); }
+
     input[type=range] {
       -webkit-appearance: none;
       appearance: none;
@@ -169,14 +207,17 @@
       border: 2px solid #ffffff;
       cursor: pointer;
     }
+
+    /* Collapsible styles */
     .category-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid #1e293b;
+      cursor: pointer;
+      user-select: none;
+      padding: 2px 0;
     }
+    .category-header:hover { opacity: 0.95; }
     .category-title {
       font-size: 13px;
       font-weight: 700;
@@ -188,13 +229,43 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
+      flex-shrink: 0;
     }
-    
+    .cat-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cat-total {
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+    }
+    .chevron-icon {
+      font-size: 11px;
+      color: #64748b;
+      transition: transform 0.2s ease;
+      display: inline-block;
+    }
+    .collapsed .chevron-icon {
+      transform: rotate(-90deg);
+    }
+    .category-body {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #1e293b;
+      display: block;
+    }
+    .collapsed .category-body {
+      display: none;
+    }
+
+    /* Modal styling */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.82);
+      background: rgba(0, 0, 0, 0.84);
       backdrop-filter: blur(4px);
       z-index: 9999;
       align-items: center;
@@ -206,23 +277,46 @@
       border: 1px solid #334155;
       border-radius: 18px;
       width: 100%;
-      max-width: 320px;
-      padding: 22px;
-      text-align: center;
+      max-width: 340px;
+      padding: 20px;
       box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7);
+    }
+    .form-group {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+    .form-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .text-input, .select-input {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      color: #ffffff;
+      outline: none;
+    }
+    .text-input:focus, .select-input:focus {
+      border-color: #3b82f6;
     }
     .pin-input {
       width: 100%;
       background: #1e293b;
       border: 1px solid #475569;
       border-radius: 12px;
-      padding: 12px;
+      padding: 10px;
       text-align: center;
       font-size: 24px;
       color: #fff;
       font-weight: 700;
       letter-spacing: 6px;
-      margin: 14px 0;
+      margin: 12px 0;
       outline: none;
     }
     .toast {
@@ -248,23 +342,25 @@
 </head>
 <body>
 
+  <!-- Top bar -->
   <header class="header-bar">
     <div style="display: flex; align-items: center; gap: 10px;">
       <div class="logo-badge">£</div>
       <div>
         <div style="display: flex; align-items: center; gap: 6px;">
           <h1 style="font-size: 15px; font-weight: 700; color: #fff;">Budget Planner</h1>
-          <span style="font-size: 10px; font-weight: 700; background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 5px; border-radius: 4px; border: 1px solid rgba(59,130,246,0.3);">v2.6</span>
+          <span style="font-size: 10px; font-weight: 700; background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 5px; border-radius: 4px; border: 1px solid rgba(59,130,246,0.3);">v2.7</span>
         </div>
-        <p style="font-size: 10px; color: #10b981; font-weight: 600;">🔒 Private Storage Active</p>
+        <p style="font-size: 10px; color: #10b981; font-weight: 600;">🔒 Private Phone Storage</p>
       </div>
     </div>
-    <div style="display: flex; gap: 8px;">
-      <button class="btn btn-primary" onclick="openPinModal()">Unlock Budget</button>
+    <div style="display: flex; gap: 6px;">
+      <button class="btn btn-primary" onclick="openPinModal()">Unlock</button>
       <button class="btn btn-secondary" onclick="copySummary()">Copy</button>
     </div>
   </header>
 
+  <!-- Hero Spending Overview -->
   <div class="card hero-card">
     <div style="display: flex; justify-content: space-between; align-items: center;">
       <span class="hero-title">Spending Money Left</span>
@@ -283,6 +379,7 @@
     </div>
   </div>
 
+  <!-- Income & Car Fund Summary -->
   <div class="grid-2" style="margin-bottom: 14px;">
     <div class="card" style="margin-bottom: 0;">
       <div class="field-label">
@@ -291,7 +388,7 @@
       </div>
       <div style="display: flex; align-items: center; gap: 4px;">
         <span style="color: #64748b; font-weight: 700;">£</span>
-        <input type="number" id="inpIncome" class="num-input" style="width: 100%;" value="0.00" step="10" min="0" oninput="onDirectChange('income', this.value)">
+        <input type="number" id="inpIncome" class="num-input" style="width: 100%;" value="0.00" step="10" min="0" oninput="onIncomeChange(this.value)">
       </div>
       <p style="font-size: 10px; color: #64748b; margin-top: 6px;">After Car: <strong id="dispAfterCar" style="color: #cbd5e1;">£0.00</strong></p>
     </div>
@@ -306,183 +403,97 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="bill-meta">
-      <span class="bill-name" style="color: #34d399; font-weight: 700;">Dedicated Car Fund Transfer</span>
-      <div style="display: flex; align-items: center; gap: 3px;">
-        <span style="color: #64748b; font-size: 12px;">£</span>
-        <input type="number" id="inpCar" class="num-input" value="0.00" step="5" min="0" oninput="onCarChange(this.value)">
+  <!-- Collapsible Car Fund Card -->
+  <div class="card" id="card_car">
+    <div class="category-header" onclick="toggleCardCollapse('car')">
+      <div class="category-title">
+        <span class="category-dot" style="background: #34d399;"></span>
+        <span style="color: #34d399;">Dedicated Car Fund Transfer</span>
+      </div>
+      <div class="cat-right">
+        <span class="cat-total" id="catTotal_car" style="color: #34d399;">£0.00</span>
+        <span class="chevron-icon">▼</span>
       </div>
     </div>
-    <input type="range" id="rngCar" min="0" max="1000" step="5" value="0" oninput="onCarChange(this.value)">
+    <div class="category-body">
+      <div class="bill-meta">
+        <span class="bill-name" style="color: #94a3b8; font-size: 12px;">Monthly Savings Transfer</span>
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="color: #64748b; font-size: 12px;">£</span>
+          <input type="number" id="inpCar" class="num-input" value="0.00" step="5" min="0" oninput="onCarChange(this.value)">
+        </div>
+      </div>
+      <input type="range" id="rngCar" min="0" max="1000" step="5" value="0" oninput="onCarChange(this.value)">
+    </div>
   </div>
 
-  <div class="card">
-    <div class="category-header">
+  <!-- Action Bar: Add Bill & Global Collapse -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 2px 10px 2px;">
+    <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8;">
+      Living Bills & Transfers
+    </span>
+    <div style="display: flex; gap: 6px;">
+      <button class="btn btn-secondary btn-sm" onclick="toggleAllCollapse()">Toggle All</button>
+      <button class="btn btn-emerald btn-sm" onclick="openAddBillModal()">+ Add Bill</button>
+    </div>
+  </div>
+
+  <!-- Category 1: Housing & Utilities -->
+  <div class="card" id="card_housing">
+    <div class="category-header" onclick="toggleCardCollapse('housing')">
       <div class="category-title">
         <span class="category-dot" style="background: #3b82f6;"></span>
         <span>Housing & Utilities</span>
       </div>
-      <span style="font-size: 12px; font-weight: 700; color: #94a3b8;" id="catTotal_housing">£0.00</span>
-    </div>
-    
-    <div class="bill-row">
-      <div class="bill-meta">
-        <span class="bill-name">Mortgage</span>
-        <div style="display: flex; align-items: center; gap: 3px;">
-          <span style="color: #64748b; font-size: 12px;">£</span>
-          <input type="number" id="inp_mortgage" class="num-input" value="0.00" oninput="onBillChange('mortgage', this.value)">
-        </div>
+      <div class="cat-right">
+        <span class="cat-total" id="catTotal_housing">£0.00</span>
+        <span class="chevron-icon">▼</span>
       </div>
-      <input type="range" id="rng_mortgage" min="0" max="1500" step="10" value="0" oninput="onBillChange('mortgage', this.value)">
     </div>
-
-    <div class="bill-row">
-      <div class="bill-meta">
-        <span class="bill-name">Internet</span>
-        <div style="display: flex; align-items: center; gap: 3px;">
-          <span style="color: #64748b; font-size: 12px;">£</span>
-          <input type="number" id="inp_internet" class="num-input" value="0.00" oninput="onBillChange('internet', this.value)">
-        </div>
-      </div>
-      <input type="range" id="rng_internet" min="0" max="120" step="1" value="0" oninput="onBillChange('internet', this.value)">
-    </div>
-
-    <div class="bill-row">
-      <div class="bill-meta">
-        <span class="bill-name">Phone</span>
-        <div style="display: flex; align-items: center; gap: 3px;">
-          <span style="color: #64748b; font-size: 12px;">£</span>
-          <input type="number" id="inp_phone" class="num-input" value="0.00" oninput="onBillChange('phone', this.value)">
-        </div>
-      </div>
-      <input type="range" id="rng_phone" min="0" max="150" step="5" value="0" oninput="onBillChange('phone', this.value)">
+    <div class="category-body" id="list_housing">
+      <!-- Dynamic bill rows inserted here -->
     </div>
   </div>
 
-  <div class="card">
-    <div class="category-header">
+  <!-- Category 2: Debt & Transfers -->
+  <div class="card" id="card_debts">
+    <div class="category-header" onclick="toggleCardCollapse('debts')">
       <div class="category-title">
         <span class="category-dot" style="background: #ef4444;"></span>
         <span>Debt & Variable Transfers</span>
       </div>
-      <span style="font-size: 12px; font-weight: 700; color: #94a3b8;" id="catTotal_debts">£0.00</span>
-    </div>
-
-    <div class="bill-row">
-      <div class="bill-meta">
-        <span class="bill-name">Credit Card</span>
-        <div style="display: flex; align-items: center; gap: 3px;">
-          <span style="color: #64748b; font-size: 12px;">£</span>
-          <input type="number" id="inp_credit_card" class="num-input" value="0.00" oninput="onBillChange('credit_card', this.value)">
-        </div>
+      <div class="cat-right">
+        <span class="cat-total" id="catTotal_debts">£0.00</span>
+        <span class="chevron-icon">▼</span>
       </div>
-      <input type="range" id="rng_credit_card" min="0" max="500" step="10" value="0" oninput="onBillChange('credit_card', this.value)">
     </div>
-
-    <div class="bill-row">
-      <div class="bill-meta">
-        <span class="bill-name">Car Insurance</span>
-        <div style="display: flex; align-items: center; gap: 3px;">
-          <span style="color: #64748b; font-size: 12px;">£</span>
-          <input type="number" id="inp_car_insurance" class="num-input" value="0.00" oninput="onBillChange('car_insurance', this.value)">
-        </div>
-      </div>
-      <input type="range" id="rng_car_insurance" min="0" max="150" step="5" value="0" oninput="onBillChange('car_insurance', this.value)">
-    </div>
-
-    <div class="bill-row">
-      <div class="bill-meta">
-        <span class="bill-name">Partner Transfer</span>
-        <div style="display: flex; align-items: center; gap: 3px;">
-          <span style="color: #64748b; font-size: 12px;">£</span>
-          <input type="number" id="inp_partner_transfer" class="num-input" value="0.00" oninput="onBillChange('partner_transfer', this.value)">
-        </div>
-      </div>
-      <input type="range" id="rng_partner_transfer" min="0" max="400" step="10" value="0" oninput="onBillChange('partner_transfer', this.value)">
+    <div class="category-body" id="list_debts">
+      <!-- Dynamic bill rows inserted here -->
     </div>
   </div>
 
-  <div class="card">
-    <div class="category-header">
+  <!-- Category 3: Lifestyle & Subscriptions -->
+  <div class="card" id="card_lifestyle">
+    <div class="category-header" onclick="toggleCardCollapse('lifestyle')">
       <div class="category-title">
         <span class="category-dot" style="background: #10b981;"></span>
         <span>Lifestyle & Subscriptions</span>
       </div>
-      <span style="font-size: 12px; font-weight: 700; color: #94a3b8;" id="catTotal_lifestyle">£0.00</span>
-    </div>
-
-    <div class="bill-row">
-      <div class="bill-meta">
-        <span class="bill-name">Haircut</span>
-        <div style="display: flex; align-items: center; gap: 3px;">
-          <span style="color: #64748b; font-size: 12px;">£</span>
-          <input type="number" id="inp_haircut" class="num-input" value="0.00" oninput="onBillChange('haircut', this.value)">
-        </div>
+      <div class="cat-right">
+        <span class="cat-total" id="catTotal_lifestyle">£0.00</span>
+        <span class="chevron-icon">▼</span>
       </div>
-      <input type="range" id="rng_haircut" min="0" max="150" step="5" value="0" oninput="onBillChange('haircut', this.value)">
     </div>
-
-    <div class="bill-row">
-      <div class="bill-meta">
-        <span class="bill-name">Vape</span>
-        <div style="display: flex; align-items: center; gap: 3px;">
-          <span style="color: #64748b; font-size: 12px;">£</span>
-          <input type="number" id="inp_vape" class="num-input" value="0.00" oninput="onBillChange('vape', this.value)">
-        </div>
-      </div>
-      <input type="range" id="rng_vape" min="0" max="150" step="5" value="0" oninput="onBillChange('vape', this.value)">
-    </div>
-
-    <div class="bill-row">
-      <div class="bill-meta">
-        <span class="bill-name">Google AI Pro</span>
-        <div style="display: flex; align-items: center; gap: 3px;">
-          <span style="color: #64748b; font-size: 12px;">£</span>
-          <input type="number" id="inp_google_ai" class="num-input" value="0.00" oninput="onBillChange('google_ai', this.value)">
-        </div>
-      </div>
-      <input type="range" id="rng_google_ai" min="0" max="50" step="5" value="0" oninput="onBillChange('google_ai', this.value)">
-    </div>
-
-    <div class="bill-row">
-      <div class="bill-meta">
-        <span class="bill-name">Spotify</span>
-        <div style="display: flex; align-items: center; gap: 3px;">
-          <span style="color: #64748b; font-size: 12px;">£</span>
-          <input type="number" id="inp_spotify" class="num-input" value="0.00" step="0.01" oninput="onBillChange('spotify', this.value)">
-        </div>
-      </div>
-      <input type="range" id="rng_spotify" min="0" max="30" step="0.5" value="0" oninput="onBillChange('spotify', this.value)">
-    </div>
-
-    <div class="bill-row">
-      <div class="bill-meta">
-        <span class="bill-name">Amazon Prime</span>
-        <div style="display: flex; align-items: center; gap: 3px;">
-          <span style="color: #64748b; font-size: 12px;">£</span>
-          <input type="number" id="inp_prime" class="num-input" value="0.00" oninput="onBillChange('prime', this.value)">
-        </div>
-      </div>
-      <input type="range" id="rng_prime" min="0" max="30" step="1" value="0" oninput="onBillChange('prime', this.value)">
-    </div>
-
-    <div class="bill-row">
-      <div class="bill-meta">
-        <span class="bill-name">Microsoft 365</span>
-        <div style="display: flex; align-items: center; gap: 3px;">
-          <span style="color: #64748b; font-size: 12px;">£</span>
-          <input type="number" id="inp_m365" class="num-input" value="0.00" oninput="onBillChange('m365', this.value)">
-        </div>
-      </div>
-      <input type="range" id="rng_m365" min="0" max="20" step="1" value="0" oninput="onBillChange('m365', this.value)">
+    <div class="category-body" id="list_lifestyle">
+      <!-- Dynamic bill rows inserted here -->
     </div>
   </div>
 
+  <!-- Modal: Unlock Budget -->
   <div id="pinModal" class="modal-overlay">
-    <div class="modal-card">
+    <div class="modal-card" style="text-align: center;">
       <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px;">Unlock Budget</h3>
-      <p style="font-size: 12px; color: #94a3b8;">Enter PIN to populate your pre-calculated budget.</p>
+      <p style="font-size: 12px; color: #94a3b8;">Enter PIN to populate preset budget figures.</p>
       
       <input type="password" id="pinInput" class="pin-input" maxlength="4" inputmode="numeric" placeholder="••••">
       <p id="pinError" style="display:none; color: #f43f5e; font-size: 11px; margin-bottom: 12px; font-weight: 600;">Incorrect PIN. Enter 1234.</p>
@@ -494,48 +505,81 @@
     </div>
   </div>
 
+  <!-- Modal: Add Custom Bill -->
+  <div id="addBillModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px;">Add New Bill</h3>
+      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 14px;">Add a custom expense or subscription.</p>
+      
+      <div class="form-group">
+        <label class="form-label">Bill Name</label>
+        <input type="text" id="newBillName" class="text-input" placeholder="e.g., Gym Membership" maxlength="28">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select id="newBillCat" class="select-input">
+          <option value="housing">Housing & Utilities</option>
+          <option value="debts">Debt & Variable Transfers</option>
+          <option value="lifestyle" selected>Lifestyle & Subscriptions</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Monthly Amount (£)</label>
+        <input type="number" id="newBillVal" class="text-input" placeholder="0.00" step="0.50" min="0">
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button class="btn btn-secondary" style="flex: 1;" onclick="closeAddBillModal()">Cancel</button>
+        <button class="btn btn-emerald" style="flex: 1;" onclick="submitNewBill()">Add Bill</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast">Notice</div>
 
   <script>
-    const STORE_KEY = 'bp_budget_data_v26';
+    const STORE_KEY = 'bp_budget_data_v27';
     const PIN_KEY = '1234';
 
-    const INITIAL_BUDGET = {
+    // Default baseline dataset loaded with PIN 1234
+    const DEFAULT_PRESET = {
       income: 2237.00,
       carSavings: 616.53,
-      bills: {
-        mortgage: 940.00,
-        internet: 44.00,
-        phone: 60.00,
-        credit_card: 190.00,
-        car_insurance: 15.00,
-        partner_transfer: 0.00,
-        haircut: 70.00,
-        vape: 50.00,
-        google_ai: 20.00,
-        spotify: 12.99,
-        prime: 10.00,
-        m365: 5.00
-      }
+      collapsed: {
+        car: false,
+        housing: false,
+        debts: false,
+        lifestyle: false
+      },
+      bills: [
+        { id: 'mortgage', name: 'Mortgage', cat: 'housing', val: 940.00, max: 1500, step: 10 },
+        { id: 'internet', name: 'Internet', cat: 'housing', val: 44.00, max: 120, step: 1 },
+        { id: 'phone', name: 'Phone', cat: 'housing', val: 60.00, max: 150, step: 5 },
+        { id: 'credit_card', name: 'Credit Card', cat: 'debts', val: 190.00, max: 500, step: 10 },
+        { id: 'car_insurance', name: 'Car Insurance', cat: 'debts', val: 15.00, max: 150, step: 5 },
+        { id: 'partner_transfer', name: 'Partner Transfer', cat: 'debts', val: 0.00, max: 400, step: 10 },
+        { id: 'haircut', name: 'Haircut', cat: 'lifestyle', val: 70.00, max: 150, step: 5 },
+        { id: 'vape', name: 'Vape', cat: 'lifestyle', val: 50.00, max: 150, step: 5 },
+        { id: 'google_ai', name: 'Google AI Pro', cat: 'lifestyle', val: 20.00, max: 50, step: 5 },
+        { id: 'spotify', name: 'Spotify', cat: 'lifestyle', val: 12.99, max: 30, step: 0.5 },
+        { id: 'prime', name: 'Amazon Prime', cat: 'lifestyle', val: 10.00, max: 30, step: 1 },
+        { id: 'm365', name: 'Microsoft 365', cat: 'lifestyle', val: 5.00, max: 20, step: 1 }
+      ]
     };
 
+    // Current working state (starts at 0.00 until unlocked or edited)
     let state = {
       income: 0.00,
       carSavings: 0.00,
-      bills: {
-        mortgage: 0.00,
-        internet: 0.00,
-        phone: 0.00,
-        credit_card: 0.00,
-        car_insurance: 0.00,
-        partner_transfer: 0.00,
-        haircut: 0.00,
-        vape: 0.00,
-        google_ai: 0.00,
-        spotify: 0.00,
-        prime: 0.00,
-        m365: 0.00
-      }
+      collapsed: {
+        car: false,
+        housing: false,
+        debts: false,
+        lifestyle: false
+      },
+      bills: JSON.parse(JSON.stringify(DEFAULT_PRESET.bills)).map(b => ({ ...b, val: 0.00 }))
     };
 
     function fmt(n) {
@@ -553,8 +597,11 @@
         const raw = localStorage.getItem(STORE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed.income === 'number' && parsed.bills) {
+          if (parsed && typeof parsed.income === 'number' && Array.isArray(parsed.bills)) {
             state = parsed;
+            if (!state.collapsed) {
+              state.collapsed = { car: false, housing: false, debts: false, lifestyle: false };
+            }
             return true;
           }
         }
@@ -562,36 +609,79 @@
       return false;
     }
 
+    // Render all bills dynamically into their category containers
+    function renderBills() {
+      const containers = {
+        housing: document.getElementById('list_housing'),
+        debts: document.getElementById('list_debts'),
+        lifestyle: document.getElementById('list_lifestyle')
+      };
+
+      for (const k of Object.keys(containers)) {
+        containers[k].innerHTML = '';
+      }
+
+      state.bills.forEach((bill) => {
+        const cont = containers[bill.cat] || containers['lifestyle'];
+        const sliderMax = Math.max(bill.max || 100, Math.ceil((bill.val || 0) * 1.3), 50);
+
+        const row = document.createElement('div');
+        row.className = 'bill-row';
+        row.id = `row_${bill.id}`;
+        row.innerHTML = `
+          <div class="bill-meta">
+            <div class="bill-name-wrap">
+              <button class="del-btn" title="Delete bill" onclick="deleteBill('${bill.id}')">✕</button>
+              <span class="bill-name" title="${escapeHtml(bill.name)}">${escapeHtml(bill.name)}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 3px;">
+              <span style="color: #64748b; font-size: 12px;">£</span>
+              <input type="number" id="inp_${bill.id}" class="num-input" value="${Number(bill.val || 0).toFixed(2)}" step="${bill.step || 1}" min="0" oninput="onBillValChange('${bill.id}', this.value)">
+            </div>
+          </div>
+          <input type="range" id="rng_${bill.id}" min="0" max="${sliderMax}" step="${bill.step || 1}" value="${bill.val || 0}" oninput="onBillValChange('${bill.id}', this.value)">
+        `;
+        cont.appendChild(row);
+      });
+
+      // Update collapse states
+      applyCollapseUI();
+      recalculate();
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+      });
+    }
+
     function syncUI() {
       document.getElementById('inpIncome').value = state.income || 0;
       document.getElementById('inpCar').value = state.carSavings || 0;
       document.getElementById('rngCar').value = state.carSavings || 0;
-
-      for (const [key, val] of Object.entries(state.bills)) {
-        const inp = document.getElementById(`inp_${key}`);
-        const rng = document.getElementById(`rng_${key}`);
-        if (inp) inp.value = val;
-        if (rng) {
-          if (val > parseFloat(rng.max)) rng.max = Math.ceil(val * 1.3);
-          rng.value = val;
-        }
-      }
-      recalculate();
+      renderBills();
     }
 
     function recalculate() {
       const inc = parseFloat(state.income) || 0;
       const car = parseFloat(state.carSavings) || 0;
 
-      const housingSum = (parseFloat(state.bills.mortgage) || 0) + (parseFloat(state.bills.internet) || 0) + (parseFloat(state.bills.phone) || 0);
-      const debtsSum = (parseFloat(state.bills.credit_card) || 0) + (parseFloat(state.bills.car_insurance) || 0) + (parseFloat(state.bills.partner_transfer) || 0);
-      const lifestyleSum = (parseFloat(state.bills.haircut) || 0) + (parseFloat(state.bills.vape) || 0) + (parseFloat(state.bills.google_ai) || 0) + (parseFloat(state.bills.spotify) || 0) + (parseFloat(state.bills.prime) || 0) + (parseFloat(state.bills.m365) || 0);
+      let catSums = { housing: 0, debts: 0, lifestyle: 0 };
+      state.bills.forEach(b => {
+        const amt = parseFloat(b.val) || 0;
+        if (catSums[b.cat] !== undefined) {
+          catSums[b.cat] += amt;
+        } else {
+          catSums.lifestyle += amt;
+        }
+      });
 
-      document.getElementById('catTotal_housing').innerText = fmt(housingSum);
-      document.getElementById('catTotal_debts').innerText = fmt(debtsSum);
-      document.getElementById('catTotal_lifestyle').innerText = fmt(lifestyleSum);
+      document.getElementById('catTotal_housing').innerText = fmt(catSums.housing);
+      document.getElementById('catTotal_debts').innerText = fmt(catSums.debts);
+      document.getElementById('catTotal_lifestyle').innerText = fmt(catSums.lifestyle);
+      document.getElementById('catTotal_car').innerText = fmt(car);
 
-      const totalBills = housingSum + debtsSum + lifestyleSum;
+      const totalBills = catSums.housing + catSums.debts + catSums.lifestyle;
       const afterCar = inc - car;
       const pocketMonthly = afterCar - totalBills;
       const pocketWeekly = (pocketMonthly * 12) / 52;
@@ -629,8 +719,8 @@
       }
     }
 
-    function onDirectChange(field, val) {
-      state[field] = parseFloat(val) || 0;
+    function onIncomeChange(val) {
+      state.income = parseFloat(val) || 0;
       saveState();
       recalculate();
     }
@@ -644,20 +734,109 @@
       recalculate();
     }
 
-    function onBillChange(key, val) {
+    function onBillValChange(id, val) {
       const num = parseFloat(val) || 0;
-      state.bills[key] = num;
-      const inp = document.getElementById(`inp_${key}`);
-      const rng = document.getElementById(`rng_${key}`);
-      if (inp) inp.value = num;
-      if (rng) {
-        if (num > parseFloat(rng.max)) rng.max = Math.ceil(num * 1.3);
-        rng.value = num;
+      const bill = state.bills.find(b => b.id === id);
+      if (bill) {
+        bill.val = num;
+        const inp = document.getElementById(`inp_${id}`);
+        const rng = document.getElementById(`rng_${id}`);
+        if (inp) inp.value = num;
+        if (rng) {
+          if (num > parseFloat(rng.max)) rng.max = Math.ceil(num * 1.3);
+          rng.value = num;
+        }
+        saveState();
+        recalculate();
       }
-      saveState();
-      recalculate();
     }
 
+    // Collapsible Logic
+    function toggleCardCollapse(cardId) {
+      if (!state.collapsed) state.collapsed = {};
+      state.collapsed[cardId] = !state.collapsed[cardId];
+      saveState();
+      applyCollapseUI();
+    }
+
+    function applyCollapseUI() {
+      ['car', 'housing', 'debts', 'lifestyle'].forEach(id => {
+        const el = document.getElementById(`card_${id}`);
+        if (el) {
+          if (state.collapsed && state.collapsed[id]) {
+            el.classList.add('collapsed');
+          } else {
+            el.classList.remove('collapsed');
+          }
+        }
+      });
+    }
+
+    function toggleAllCollapse() {
+      if (!state.collapsed) state.collapsed = {};
+      const shouldCollapse = !state.collapsed.housing;
+      state.collapsed = {
+        car: shouldCollapse,
+        housing: shouldCollapse,
+        debts: shouldCollapse,
+        lifestyle: shouldCollapse
+      };
+      saveState();
+      applyCollapseUI();
+    }
+
+    // Bill Deletion
+    function deleteBill(id) {
+      const bill = state.bills.find(b => b.id === id);
+      const name = bill ? bill.name : 'Bill';
+      state.bills = state.bills.filter(b => b.id !== id);
+      saveState();
+      renderBills();
+      showToast(`Removed ${name}`);
+    }
+
+    // Add Bill Modal
+    function openAddBillModal() {
+      document.getElementById('newBillName').value = '';
+      document.getElementById('newBillVal').value = '';
+      document.getElementById('addBillModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('newBillName').focus(), 80);
+    }
+
+    function closeAddBillModal() {
+      document.getElementById('addBillModal').style.display = 'none';
+    }
+
+    function submitNewBill() {
+      const nameInp = document.getElementById('newBillName').value.trim();
+      const catInp = document.getElementById('newBillCat').value;
+      const valInp = parseFloat(document.getElementById('newBillVal').value) || 0;
+
+      if (!nameInp) {
+        showToast('Please enter a bill name');
+        return;
+      }
+
+      const id = 'custom_' + Date.now();
+      state.bills.push({
+        id: id,
+        name: nameInp,
+        cat: catInp,
+        val: valInp,
+        max: Math.max(150, Math.ceil(valInp * 1.5)),
+        step: 1
+      });
+
+      // Expand the category if it was collapsed so user sees the added bill
+      if (state.collapsed) state.collapsed[catInp] = false;
+
+      saveState();
+      closeAddBillModal();
+      renderBills();
+      showToast(`Added ${nameInp}`);
+    }
+
+    // PIN Unlock
     function openPinModal() {
       const modal = document.getElementById('pinModal');
       modal.style.display = 'flex';
@@ -674,11 +853,11 @@
     function submitPin() {
       const val = document.getElementById('pinInput').value.trim();
       if (val === PIN_KEY) {
-        state = JSON.parse(JSON.stringify(INITIAL_BUDGET));
+        state = JSON.parse(JSON.stringify(DEFAULT_PRESET));
         saveState();
         syncUI();
         closePinModal();
-        showToast('✓ Budget unlocked & loaded!');
+        showToast('✓ Preset budget unlocked & saved!');
       } else {
         document.getElementById('pinError').style.display = 'block';
       }
@@ -687,12 +866,14 @@
     function copySummary() {
       let totalBills = 0;
       let billLines = [];
-      for (const [k, v] of Object.entries(state.bills)) {
-        totalBills += (parseFloat(v) || 0);
-        billLines.push(`• ${k.replace('_', ' ')}: ${fmt(v)}`);
-      }
+      state.bills.forEach(b => {
+        const val = parseFloat(b.val) || 0;
+        totalBills += val;
+        billLines.push(`• ${b.name}: ${fmt(val)}`);
+      });
+
       const disc = (state.income - state.carSavings) - totalBills;
-      const summary = `Take-Home Pay: ${fmt(state.income)}\nCar Savings: ${fmt(state.carSavings)}\nTotal Bills: ${fmt(totalBills)}\n${billLines.join('\n')}\n\nRemaining Pocket Money: ${fmt(disc)}`;
+      const summary = `Take-Home Pay: ${fmt(state.income)}\nCar Savings Fund: ${fmt(state.carSavings)}\nTotal Bills: ${fmt(totalBills)}\n${billLines.join('\n')}\n\nRemaining Spending Money: ${fmt(disc)}`;
       
       const el = document.createElement('textarea');
       el.value = summary;
